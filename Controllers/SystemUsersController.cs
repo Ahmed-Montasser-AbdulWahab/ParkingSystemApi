@@ -62,6 +62,15 @@ namespace Parking_System_API.Controllers
         {
             try
             {
+
+                var checkSystemUser = systemUserRepository.GetSystemUserAsyncByEmail(systemUser.Email);
+                if(checkSystemUser != null)
+                {
+                    return BadRequest($"System User with {systemUser.Email} already exists");
+
+                }
+                
+
                 var location = linkGenerator.GetPathByAction("GetSystemUser", "SystemUsers", new { email = systemUser.Email });
                 if (String.IsNullOrEmpty(location))
                 {
@@ -86,12 +95,19 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpGet, Authorize(Roles = "admin")]
+        [HttpGet]//, Authorize(Roles = "admin")]
         public async Task<ActionResult<SystemUserModel[]>> GetAllSystemUsers()
         {
             try
             {
+                
+                
                 var systemUsers = await systemUserRepository.GetAllSystemUsersAsync();
+                if (systemUsers.Length == 0)
+                {
+                    return NotFound("No SystemUsers Exist");
+
+                }
                 SystemUserModel[] models = mapper.Map<SystemUserModel[]>(systemUsers);
                 return models;
             }
@@ -106,6 +122,11 @@ namespace Parking_System_API.Controllers
             try
             {
                 var systemUser = await systemUserRepository.GetSystemUserAsyncByEmail(email);
+                if (systemUser == null)
+                {
+                    return NotFound($"System User with {systemUser.Email} not Found");
+
+                }
                 SystemUserModel model = mapper.Map<SystemUserModel>(systemUser);
                 return model;
             }
@@ -121,6 +142,11 @@ namespace Parking_System_API.Controllers
             try
             {
                 var systemUsers = await systemUserRepository.GetSystemUsersAsyncByName(name);
+                if (systemUsers.Length == 0)
+                {
+                    return NotFound($"No SystemUsers with name : {name} Exist");
+
+                }
                 SystemUserModel[] models = mapper.Map<SystemUserModel[]>(systemUsers);
                 return models;
             }
@@ -222,7 +248,7 @@ namespace Parking_System_API.Controllers
 
                 //Adding Vehicles
                 
-                if (model.PlateNumberIds.Count == 0)
+                if (model.PlateNumberIds.Count == 0) //Null or Empty
                 {
                     participant.Status = false;
                 }
