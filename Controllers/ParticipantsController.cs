@@ -7,6 +7,7 @@ using Parking_System_API.Data.Models;
 using Parking_System_API.Data.Repositories.ConstantsR;
 using Parking_System_API.Data.Repositories.ParticipantR;
 using Parking_System_API.Data.Repositories.VehicleR;
+using Parking_System_API.Model;
 using System;
 using System.Threading.Tasks;
 
@@ -94,6 +95,24 @@ namespace Parking_System_API.Controllers
             }
         }
 
+
+        [HttpPost("login"), AllowAnonymous]
+        public async Task<IActionResult> login(AuthenticationRequest authenticationRequest)
+        {
+            try
+            {
+                var authResult = await jwtAuthenticationManager.AuthenticateCustomer(authenticationRequest.Email, authenticationRequest.Password);
+                if (authResult == null)
+                    return Unauthorized();
+                else
+                    return Ok(authResult);
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Error");
+            }
+
+        }
 
     }
 }

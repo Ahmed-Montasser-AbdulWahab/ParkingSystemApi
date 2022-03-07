@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using Parking_System_API.Data.Repositories.ParticipantR;
 using Parking_System_API.Data.Repositories.SystemUserR;
 using System;
 using System.Collections.Generic;
@@ -12,23 +13,25 @@ namespace Parking_System_API
     public class JwtAuthenticationManager
     {
         private readonly ISystemUserRepository systemUserRepository;
+        private readonly IParticipantRepository participantRepository;
 
-        public JwtAuthenticationManager(ISystemUserRepository systemUserRepository)
+        public JwtAuthenticationManager(ISystemUserRepository systemUserRepository, IParticipantRepository participantRepository)
         {
             this.systemUserRepository = systemUserRepository;
+            this.participantRepository = participantRepository;
         }
         public async Task<JwtAuthenticationResponse> AuthenticateCustomer(string email, string password)
         {
             //Validating the User Name and Password
-            var systemUser = await systemUserRepository.GetSystemUserAsyncByEmail(email);
+            var participant = await participantRepository.GetParticipantAsyncByEmail(email);
 
-            if(systemUser == null)
+            if(participant == null)
             {
                 return null;
             }
-            string generatedHashed = Hashing.HashingClass.GenerateHashedPassword(password, systemUser.Salt);
+            string generatedHashed = Hashing.HashingClass.GenerateHashedPassword(password, participant.Salt);
 
-            if(generatedHashed == systemUser.Password)
+            if(generatedHashed != participant.Password)
             {
                 return null;
             }
