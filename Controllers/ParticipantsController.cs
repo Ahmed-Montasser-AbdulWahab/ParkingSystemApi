@@ -69,7 +69,6 @@ namespace Parking_System_API.Controllers
             }
             catch (Exception)
             {
-
                 return this.StatusCode(StatusCodes.Status500InternalServerError, "Error");
             }
         }

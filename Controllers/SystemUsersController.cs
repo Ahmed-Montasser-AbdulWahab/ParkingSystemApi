@@ -96,13 +96,11 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpGet]//, Authorize(Roles = "admin")]
+        [HttpGet, Authorize(Roles = "admin")]
         public async Task<ActionResult<SystemUserModel[]>> GetAllSystemUsers()
         {
             try
             {
-                
-                
                 var systemUsers = await systemUserRepository.GetAllSystemUsersAsync();
                 if (systemUsers.Length == 0)
                 {
@@ -291,25 +289,75 @@ namespace Parking_System_API.Controllers
             
         }
 
-         /* [HttpPut("Participant/{email}"), Authorize(Roles = "admin,operator")]
-          public async Task<ActionResult<Participant>> UpdateParticipant(string email,ParticipantAdminModel model)
+         [HttpPut("Participant/update/{email}"), Authorize(Roles = "admin,operator")]
+          public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(string email,ParticipantAdminModel model)
           {
               try
               {
 
-                   var participant = await participantRepository.GetParticipantAsyncByEmail(email);
+                   var participant = await participantRepository.GetParticipantAsyncByEmail(email, true);
                   if (participant == null)
                   {
                       return NotFound($"Participant with email {model.Email} doesn't exist");
                   }
 
+                  if(model.Name != null)
+                {
+                    participant.Name = model.Name;
+                }
+                   if(model.Email != null)
+                {
+                    var checkParticipant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
+                    if(checkParticipant != null)
+                    {
+                        return BadRequest($"Participant with email {model.Email} already exists");
+                    }
 
+                    participant.Email = model.Email;
+                }
+
+                if (model.ProfileImage != null)
+                {
+                    /*
+                     * 
+                     * 
+                     * 
+                     * */
+                }
+                if (model.PlateNumberIds.Count > 0) {
+
+                    foreach (var v in model.PlateNumberIds)
+                    {
+                        var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
+                        if (Vehicle == null)
+                        {
+                            return BadRequest($"No Vehicle saved with the provided License Plate {v}");
+                        }
+                        else
+                        {
+                            if (!participant.Vehicles.Contains(Vehicle)) { 
+                            
+                                participant.Vehicles.Add(Vehicle);
+                            }
+                        }
+                    }
+
+
+                }
+
+
+                if(!await vehicleRepository.SaveChangesAsync())
+                {
+                    return BadRequest("Updates Not Save");
+                }
+
+                return mapper.Map<ParticipantResponseModel>(participant);
               }
               catch (Exception ex)
               {
                   return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
               }
-              }*/
+              }
 
 
 
