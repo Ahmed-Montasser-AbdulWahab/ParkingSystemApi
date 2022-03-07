@@ -15,15 +15,15 @@ namespace Parking_System_API.Data.Entities
   
         public string Color { get; set; }
 
-        public DateTime StartSubscription { get; set; }
+        public DateTime? StartSubscription { get; set; }
 
-        public DateTime EndSubscription { get; set; }
+        public DateTime? EndSubscription { get; set; }
         [Required]
         public bool IsPresent { get; set; }
         [Required]
         public bool IsActive { get; set; }
 
-        public ICollection<Participant> Participants { get; set; }
+        public ICollection<Participant> Participants { get; set; } 
         public ICollection<ParkingTransaction> ParkingTransactions { get; set; }
 
 

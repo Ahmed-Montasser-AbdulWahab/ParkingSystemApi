@@ -15,6 +15,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Parking_System_API.Hashing;
 using Parking_System_API.Data.Repositories.ConstantsR;
+using System.Collections.Generic;
 
 namespace Parking_System_API.Controllers
 {
@@ -63,7 +64,7 @@ namespace Parking_System_API.Controllers
             try
             {
 
-                var checkSystemUser = systemUserRepository.GetSystemUserAsyncByEmail(systemUser.Email);
+                var checkSystemUser = await systemUserRepository.GetSystemUserAsyncByEmail(systemUser.Email);
                 if(checkSystemUser != null)
                 {
                     return BadRequest($"System User with {systemUser.Email} already exists");
@@ -181,7 +182,7 @@ namespace Parking_System_API.Controllers
                 participant = new Participant() { Status = true };
                 if (model.isEgyptian)
                 {
-                    if (model.Id == null)
+                    if (model.Id == null || model.Id < 2000000000000 )
                     {
                         return BadRequest("Please provide National Id");
                     }
@@ -263,7 +264,7 @@ namespace Parking_System_API.Controllers
                         }
                         else
                         {
-                            participant.Vehicles.Add(Vehicle);
+                            participant.Vehicles = new List<Vehicle>() { Vehicle };
 
                         }
                     }
@@ -290,26 +291,128 @@ namespace Parking_System_API.Controllers
             
         }
 
-    /*    [HttpPut("Participant/{email}"), Authorize(Roles = "admin,operator")]
-        public async Task<ActionResult<Participant>> UpdateParticipant(string email,ParticipantAdminModel model)
+         /* [HttpPut("Participant/{email}"), Authorize(Roles = "admin,operator")]
+          public async Task<ActionResult<Participant>> UpdateParticipant(string email,ParticipantAdminModel model)
+          {
+              try
+              {
+
+                   var participant = await participantRepository.GetParticipantAsyncByEmail(email);
+                  if (participant == null)
+                  {
+                      return NotFound($"Participant with email {model.Email} doesn't exist");
+                  }
+
+
+              }
+              catch (Exception ex)
+              {
+                  return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
+              }
+              }*/
+
+
+
+        [HttpPost("Vehicle"), Authorize(Roles ="admin, operator")]
+        public async Task<ActionResult<Vehicle>> AddVehicle(VehicleAdminModel inputModel)
         {
             try
             {
-                var participant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
-                if (participant != null)
+                var o = await vehicleRepository.GetVehicleAsyncByPlateNumber(inputModel.PlateNumberId);
+                if (o != null)
                 {
-                    return BadRequest($"Participant with email {model.Email} already exists");
+                    return BadRequest($"Vehicle with PlateNumber {inputModel.PlateNumberId} already Exists");
                 }
 
+                
+                var newVehicle = new Vehicle() {PlateNumberId = inputModel.PlateNumberId ,IsPresent = false ,IsActive = true};
+
+                if (string.IsNullOrEmpty(inputModel.BrandName))
+                {
+                    newVehicle.IsActive = false;
+                }
+                else
+                {
+                    newVehicle.BrandName = inputModel.BrandName;
+                }
+
+                if (string.IsNullOrEmpty(inputModel.SubCategory))
+                {
+                    newVehicle.IsActive = false;
+                }
+                else
+                {
+                    newVehicle.SubCategory = inputModel.SubCategory;
+                }
+
+                if (string.IsNullOrEmpty(inputModel.Color))
+                {
+                    newVehicle.IsActive = false;
+                }
+                else
+                {
+                    newVehicle.Color = inputModel.Color;
+                }
+
+                if (inputModel.StartSubscription == null)
+                {
+                    newVehicle.IsActive = false;
+                }
+                else
+                {
+                    newVehicle.StartSubscription = inputModel.StartSubscription;
+                }
+
+                if (inputModel.EndSubscription == null)
+                {
+                    newVehicle.IsActive = false;
+                }
+                else
+                {
+                    newVehicle.EndSubscription = inputModel.EndSubscription;
+                }
+                vehicleRepository.Add(newVehicle);
+
+                if (!await vehicleRepository.SaveChangesAsync())
+                {
+                    return BadRequest("Vehicle Not Saved");
+                }
+
+                return Created("", mapper.Map<VehicleResponseModel>(newVehicle));
+            }
+            catch(Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
+            }
+        }
+
+
+
+        [HttpPost("experiment")]
+        public async Task<IActionResult> Experiment([FromBody]ExpModel model)
+        {
+            try
+            {
+                var participant = await participantRepository.GetParticipantAsyncByID(model.personID, true);
+                if (participant == null)
+                {
+                    return NotFound($"Participant with id {model.personID} doesn't exist");
+                }
+
+                var vehicle = participant.Vehicles.Where(c => c.PlateNumberId == model.plateNumber).FirstOrDefault();
+                if(vehicle == null)
+                {
+                    return NotFound($"Vehicle with id {model.personID} doesn't exist");
+                }
+
+                return Ok("Open Gate");
 
             }
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
             }
-            }
-    */
-
+        }
         public string GenerateToken(int length)
         {
             using (RNGCryptoServiceProvider cryptRNG = new RNGCryptoServiceProvider())
