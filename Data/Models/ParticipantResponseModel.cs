@@ -9,6 +9,7 @@
         public string Email { get; set; }
 
         public bool DoProvidePhoto { get; set; }
+        
 
         public bool DoDetected { get; set; }
 

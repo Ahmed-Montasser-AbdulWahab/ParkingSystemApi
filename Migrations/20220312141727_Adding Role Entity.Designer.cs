@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Parking_System_API.Data.DBContext;
 
 namespace Parking_System_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220312141727_Adding Role Entity")]
+    partial class AddingRoleEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +113,6 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("DoDetected")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("DoProvideFullData")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("DoProvidePhoto")
                         .HasColumnType("bit");
 
@@ -127,11 +126,6 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhotoUrl")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue(".\\wwwroot\\images\\Anonymous.jpg");
 
                     b.Property<string>("Salt")
                         .IsRequired()
@@ -223,8 +217,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "vfp9AsGFdXSqazDrqpwt3CbUTGL3Tm5tytFCZ0hEbn8=",
-                            Salt = "uTSU0e4sOEUjXURMHAeJ4Q=="
+                            Password = "084e78ZvtTEWX47xpD3nTr/5uRAi5wkIRx7yE+7kEwA=",
+                            Salt = "3VLhBlqPaUTHS0421dksxA=="
                         });
                 });
 

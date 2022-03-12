@@ -1,24 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Parking_System_API.Data.Entities
+namespace Parking_System_API.Data.Models
 {
-    public class SystemUser
+    public class SystemUserSignUpModel
     {
-        [Required, Key]
+        [Required]
         public string Email { get; set; }
 
         [Required]
         public string Password { get; set; }
 
-        public string Salt { get; set; }
-
         [Required]
         public string Name { get; set; }
 
         [Required]
-        public bool IsAdmin { get; set; }
+        public string Role { get; set; }
 
-        [Required]
-        public bool IsPowerAccount { get; set; }
     }
 }

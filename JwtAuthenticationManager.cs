@@ -41,9 +41,10 @@ namespace Parking_System_API
             var tokenKey = Encoding.ASCII.GetBytes(Constants.JWT_SECURITY_KEY);
             var securityTokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new System.Security.Claims.ClaimsIdentity(new List<Claim>
+                Subject = new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim("email", email),
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim("participantID", participant.ParticipantId.ToString()),
                     new Claim(ClaimTypes.Role, "CUSTOMER")
                   
                 }),
@@ -57,7 +58,6 @@ namespace Parking_System_API
             return new JwtAuthenticationResponse
             {
                 token = token,
-                Email = email,
                 expires_in = (int)tokenExpiryTimeStamp.Subtract(DateTime.Now).TotalSeconds
             };
         }
@@ -81,7 +81,7 @@ namespace Parking_System_API
             }
             var role = "";
 
-            if (systemUser.Type)
+            if (systemUser.IsAdmin)
             {
                 role = "admin";
             }
@@ -95,9 +95,9 @@ namespace Parking_System_API
             var tokenKey = Encoding.ASCII.GetBytes(Constants.JWT_SECURITY_KEY);
             var securityTokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new System.Security.Claims.ClaimsIdentity(new List<Claim>
+                Subject = new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim("email",email),
+                    new Claim(ClaimTypes.Email,email),
                     new Claim(ClaimTypes.Role, role)
 
                 }),
@@ -111,7 +111,6 @@ namespace Parking_System_API
             return new JwtAuthenticationResponse
             {
                 token = token,
-                Email = email,
                 expires_in = (int)tokenExpiryTimeStamp.Subtract(DateTime.Now).TotalSeconds
             };
         }

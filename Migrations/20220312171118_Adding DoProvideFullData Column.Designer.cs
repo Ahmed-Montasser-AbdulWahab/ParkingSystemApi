@@ -10,8 +10,8 @@ using Parking_System_API.Data.DBContext;
 namespace Parking_System_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220306110524_2nd-migration")]
-    partial class _2ndmigration
+    [Migration("20220312171118_Adding DoProvideFullData Column")]
+    partial class AddingDoProvideFullDataColumn
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -113,6 +113,9 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("DoDetected")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("DoProvideFullData")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("DoProvidePhoto")
                         .HasColumnType("bit");
 
@@ -126,6 +129,11 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue(".\\wwwroot\\images\\Anonymous.jpg");
 
                     b.Property<string>("Salt")
                         .IsRequired()
@@ -142,10 +150,58 @@ namespace Parking_System_API.Migrations
                     b.ToTable("Participants");
                 });
 
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AbbreviationRole")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AbbreviationRole = "p",
+                            RoleName = "participant"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AbbreviationRole = "a",
+                            RoleName = "admin"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AbbreviationRole = "o",
+                            RoleName = "operator"
+                        });
+                });
+
             modelBuilder.Entity("Parking_System_API.Data.Entities.SystemUser", b =>
                 {
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPowerAccount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -158,12 +214,20 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Salt")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Type")
-                        .HasColumnType("bit");
-
                     b.HasKey("Email");
 
                     b.ToTable("SystemUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Email = "admin@admin.com",
+                            IsAdmin = true,
+                            IsPowerAccount = true,
+                            Name = "Power Admin",
+                            Password = "vfp9AsGFdXSqazDrqpwt3CbUTGL3Tm5tytFCZ0hEbn8=",
+                            Salt = "uTSU0e4sOEUjXURMHAeJ4Q=="
+                        });
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Vehicle", b =>
@@ -177,7 +241,7 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("EndSubscription")
+                    b.Property<DateTime?>("EndSubscription")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
@@ -186,7 +250,7 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("IsPresent")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("StartSubscription")
+                    b.Property<DateTime?>("StartSubscription")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SubCategory")

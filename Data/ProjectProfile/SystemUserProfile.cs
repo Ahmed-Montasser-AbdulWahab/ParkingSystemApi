@@ -9,7 +9,8 @@ namespace Parking_System_API.Data.ParkingProfile
     {
         public SystemUserProfile()
         {
-            this.CreateMap<SystemUser, SystemUserModel>().ForMember(c => c.Type, m => m.MapFrom(o => (o.Type)? "admin":"operator"));
+            this.CreateMap<SystemUser, SystemUserResponseModel>().ForMember(c => c.SystemUserRole, m => m.MapFrom(o => (o.IsAdmin)? "admin":"operator"));
+            this.CreateMap<SystemUserSignUpModel, SystemUser>(); 
         }
 
     

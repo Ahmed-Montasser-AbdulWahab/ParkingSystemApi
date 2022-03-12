@@ -17,6 +17,11 @@ namespace Parking_System_API.Data.Entities
         public string Password { get; set; }
         [Required]
         public string Salt { get; set; }
+
+        public string PhotoUrl { get; set; }
+        [Required]
+        public bool DoProvideFullData { get; set; }
+
         [Required]
         public bool DoProvidePhoto { get; set; }
         [Required]

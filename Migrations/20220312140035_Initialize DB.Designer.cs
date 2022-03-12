@@ -10,8 +10,8 @@ using Parking_System_API.Data.DBContext;
 namespace Parking_System_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220307015745_Nullable-DateTime")]
-    partial class NullableDateTime
+    [Migration("20220312140035_Initialize DB")]
+    partial class InitializeDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -147,6 +147,14 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPowerAccount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -158,12 +166,20 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Salt")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Type")
-                        .HasColumnType("bit");
-
                     b.HasKey("Email");
 
                     b.ToTable("SystemUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Email = "admin@admin.com",
+                            IsAdmin = true,
+                            IsPowerAccount = true,
+                            Name = "Power Admin",
+                            Password = "3KqotRtgt+Tov/S5OirJdzBSHGzMDjGmARqG/lPnjv8=",
+                            Salt = "UPr5RNdUtp/HW5w2WyOsoQ=="
+                        });
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Vehicle", b =>

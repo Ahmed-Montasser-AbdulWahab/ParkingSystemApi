@@ -9,12 +9,12 @@ namespace Parking_System_API.Data.Models
     {
         
         public long? Id { get; set; }
-        public bool isEgyptian { get; set; }
+        public bool IsEgyptian { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
 
         public IList<string> PlateNumberIds { get; set; }
-        public IFormFile ProfileImage { get; set; }
+
 
     }
 }

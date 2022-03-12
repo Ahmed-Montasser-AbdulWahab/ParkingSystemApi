@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Parking_System_API.Migrations
 {
-    public partial class AddDatabase : Migration
+    public partial class InitializeDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -64,7 +64,8 @@ namespace Parking_System_API.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<bool>(type: "bit", nullable: false)
+                    IsAdmin = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsPowerAccount = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -79,10 +80,10 @@ namespace Parking_System_API.Migrations
                     BrandName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SubCategory = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StartSubscription = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndSubscription = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsPresent = table.Column<bool>(type: "bit", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    StartSubscription = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndSubscription = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPresent = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -107,19 +108,19 @@ namespace Parking_System_API.Migrations
                         column: x => x.HardwareId,
                         principalTable: "Hardwares",
                         principalColumn: "HardwareId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Participants_ParticipantId",
                         column: x => x.ParticipantId,
                         principalTable: "Participants",
                         principalColumn: "ParticipantId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Vehicles_PlateNumberId",
                         column: x => x.PlateNumberId,
                         principalTable: "Vehicles",
                         principalColumn: "PlateNumberId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -150,6 +151,11 @@ namespace Parking_System_API.Migrations
                 table: "Constants",
                 columns: new[] { "ID", "ConstantName", "StringValue", "Value" },
                 values: new object[] { 1, "ForeignID", null, 10000000000000L });
+
+            migrationBuilder.InsertData(
+                table: "SystemUsers",
+                columns: new[] { "Email", "IsAdmin", "IsPowerAccount", "Name", "Password", "Salt" },
+                values: new object[] { "admin@admin.com", true, true, "Power Admin", "3KqotRtgt+Tov/S5OirJdzBSHGzMDjGmARqG/lPnjv8=", "UPr5RNdUtp/HW5w2WyOsoQ==" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Hardwares_ConnectionString",

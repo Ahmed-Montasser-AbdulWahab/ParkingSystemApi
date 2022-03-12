@@ -15,6 +15,7 @@ using Parking_System_API.Data.Repositories.ConstantsR;
 using Parking_System_API.Data.Repositories.HardwareR;
 using Parking_System_API.Data.Repositories.ParkingTransactionsR;
 using Parking_System_API.Data.Repositories.ParticipantR;
+using Parking_System_API.Data.Repositories.RolesR;
 using Parking_System_API.Data.Repositories.SystemUserR;
 using Parking_System_API.Data.Repositories.VehicleR;
 using System;
@@ -46,7 +47,7 @@ namespace Parking_System_API
             services.AddScoped<IParticipantRepository, ParticipantRepository>();
             services.AddScoped<IParkingTransactionRepository, ParkingTransactionRepository>();
             services.AddScoped<IConstantRepository, ConstantRepository>();
-
+            services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<JwtAuthenticationManager>();
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ParkingProject")));
@@ -61,13 +62,15 @@ namespace Parking_System_API
             }).AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
+                options.SaveToken = false;
                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Constants.JWT_SECURITY_KEY)),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                   
                 };
             });
         }
