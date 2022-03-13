@@ -44,8 +44,8 @@ namespace Parking_System_API
                 Subject = new ClaimsIdentity(new List<Claim>
                 {
                     new Claim(ClaimTypes.Email, email),
-                    new Claim("participantID", participant.ParticipantId.ToString()),
-                    new Claim(ClaimTypes.Role, "CUSTOMER")
+                    new Claim("ParticipantID", participant.ParticipantId.ToString()),
+                    new Claim(ClaimTypes.Role, "participant")
                   
                 }),
                 Expires = tokenExpiryTimeStamp,

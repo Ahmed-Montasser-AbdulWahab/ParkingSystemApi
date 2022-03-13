@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using Parking_System_API.Data.Repositories.VehicleR;
 using Parking_System_API.Data.Repositories.ParticipantR;
 using System.Linq;
-using System.Security.Cryptography;
+
 using Parking_System_API.Hashing;
 using Parking_System_API.Data.Repositories.ConstantsR;
 using System.Collections.Generic;
@@ -33,11 +33,9 @@ namespace Parking_System_API.Controllers
         private readonly JwtAuthenticationManager jwtAuthenticationManager;
         private readonly IMapper mapper;
         private readonly LinkGenerator linkGenerator;
-        private readonly IVehicleRepository vehicleRepository;
-        private readonly IParticipantRepository participantRepository;
         // private static long ForeignMemberId = 10000000000000 ;
 
-        public SystemUsersController(IRoleRepository roleRepository, IConstantRepository constantRepository, ISystemUserRepository systemUserRepository, JwtAuthenticationManager jwtAuthenticationManager, IMapper mapper, LinkGenerator linkGenerator, IVehicleRepository vehicleRepository, IParticipantRepository participantRepository)
+        public SystemUsersController(IRoleRepository roleRepository, IConstantRepository constantRepository, ISystemUserRepository systemUserRepository, JwtAuthenticationManager jwtAuthenticationManager, IMapper mapper, LinkGenerator linkGenerator)
         {
             this.roleRepository = roleRepository;
             this.constantRepository = constantRepository;
@@ -45,8 +43,6 @@ namespace Parking_System_API.Controllers
             this.jwtAuthenticationManager = jwtAuthenticationManager;
             this.mapper = mapper;
             this.linkGenerator = linkGenerator;
-            this.vehicleRepository = vehicleRepository;
-            this.participantRepository = participantRepository;
         }
         [HttpPost("login"), AllowAnonymous]
         public async Task<IActionResult> login(AuthenticationRequest authenticationRequest)
@@ -185,299 +181,68 @@ namespace Parking_System_API.Controllers
             }
         }
 
-        [HttpPost("Participant"), Authorize(Roles = "operator, admin")]
-        public async Task<ActionResult<ParticipantResponseModel>> AddParticipant([FromBody] ParticipantAdminModel model)
-        {
-
-
-            //Adding ParticipantId
-            try
-            {
-                var participant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
-                if (participant != null)
-                {
-                    return BadRequest(new { Error = $"Participant with email {model.Email} already exists" });
-                }
-                if (model.Id != null)
-                {
-                    participant = await participantRepository.GetParticipantAsyncByID(model.Id.Value);
-                    if (participant != null)
-                    {
-                        return BadRequest(new { Error = $"Participant with id {model.Id.Value} already exists" });
-                    }
-                }
-
-                participant = new Participant() { Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg" };
-                if (model.IsEgyptian)
-                {
-                    if (model.Id == null || model.Id < 2000000000000)
-                    {
-                        return BadRequest(new { Error = "Please provide National Id" });
-                    }
-                    else
-                    {
-                        participant.ParticipantId = model.Id.Value;
-                    }
-
-                }
-
-                else if (!model.IsEgyptian)
-                {
-                    var Constant = await constantRepository.GetForeignIdAsync();
-
-                    participant.ParticipantId = Constant.Value;
-                    Constant.Value++;
-
-                    if (!await constantRepository.SaveChangesAsync())
-                    {
-                        return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
-                    }
-
-                }
-
-                //Adding Email
-
-                participant.Email = model.Email;
-
-                //Adding Password and sending it Via Email
-                var password = GenerateToken(8);
-
-                participant.Salt = HashingClass.GenerateSalt();
-
-                participant.Password = HashingClass.GenerateHashedPassword(password, participant.Salt);
-
-                ////Checking Photo and detection
-                //if (model.ProfileImage == null)
-                //{
-                //    participant.DoProvidePhoto = false;
-                //    participant.Status = false;
-                //}
-                //else
-                //{
-                //    participant.DoProvidePhoto = true;
-                //    //go to model and detection "Muhammad Samy"
-                //    /*
-                //     * 
-                //     * 
-                //     * 
-                //     * 
-                //     */
-                //    participant.DoDetected = true;
-                //}
-
-                //checking name
-                if (model.Name is null) {
-
-                    participant.DoProvideFullData = false;
-                
-                }
-                else
-
-                {
-                    participant.Name = model.Name;
-                }
-
-                //Adding Vehicles
-
-                if (model.PlateNumberIds is null || model.PlateNumberIds.Count == 0) //Null or Empty
-                {
-                    participant.DoProvideFullData = false;
-                }
-                else
-                {
-                    foreach (var v in model.PlateNumberIds)
-                    {
-                        var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
-                        if (Vehicle == null)
-                        {
-                            return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
-                        }
-                        else
-                        {
-                            participant.Vehicles = new List<Vehicle>() { Vehicle };
-
-                        }
-                    }
-                }
-
-                //adding and saving
-                participantRepository.Add(participant);
-                if (!await participantRepository.SaveChangesAsync())
-                {
-                    return BadRequest("Participant Not Saved");
-                }
-                else
-                {
-                    Email.EmailCode.SendEmail(participant.Email, password);
-                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Created("", new { Participant = response_model, Message = "Please Add a photo" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
-
-
-        }
-
-        [HttpPost("uploadProfile"), Authorize(Roles = "admin,operator")]
-        public async Task<IActionResult> UploadProfilePicture([FromForm] UploadPicture upload)
+        [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordModel model)
         {
             try
             {
-                var participant = await participantRepository.GetParticipantAsyncByID(upload.Id);
-                if (participant is null)
+                var systemUser = await systemUserRepository.GetSystemUserAsyncByEmail(model.Email);
+                if (systemUser is null)
                 {
-                    return BadRequest(new { Error = $"Participant of Id {upload.Id} doesn't Exist." });
-                }
-                var pic = upload.pic;
-                if (pic.ContentType != "image/jpeg")
-                {
-                    return BadRequest(new { Error = $"Please Upload JPG File." });
-                }
-                var path = $".\\wwwroot\\images\\Participants\\{upload.Id}.jpg";
-
-                //Connection Lost ??? 
-
-                using (var stream = new FileStream(path, FileMode.Create))
-                {
-                    await pic.CopyToAsync(stream);
+                    return BadRequest(new { Error = $"Participant of Email {model.Email} doesn't Exist." });
                 }
 
+                var password = TokenGeneration.GenerateToken(8);
 
-                participant.DoProvidePhoto = true;
-                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{upload.Id}.jpg";
+                systemUser.Salt = HashingClass.GenerateSalt();
 
-
-                //Muhammed Samy
-                /*
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 */
-                string result = await FaceDetectionApi.Detect(upload.Id, upload.pic);
-
-
-                if(participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoDetected)
+                systemUser.Password = HashingClass.GenerateHashedPassword(password, systemUser.Salt);
+                if (!await systemUserRepository.SaveChangesAsync())
                 {
-                    participant.Status = true;
+                    return BadRequest(new { Error = "Try Again Later" });
                 }
+                Email.EmailCode.SendEmail(systemUser.Email, password, "Password Reset");
 
-                if(! await participantRepository.SaveChangesAsync())
-                {
-                    return BadRequest(new {Error = "Try Again adding Photo"});
-                }
-                var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                return Created("", new { Participant = response_model, Message = "Photo is Created" , Result = result});
-
+                return Ok(new { Message = "Check Reset Password in your Email Inbox" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error");
             }
-        }
 
-        [HttpGet("getParticipant/{id:long}")]
-        public async Task<IActionResult> GetParticipant(long id)
-        {
-            try {
-                var participant = await participantRepository.GetParticipantAsyncByID(id);
-                if (participant is null)
-                {
-                    return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
-                }
-
-                Byte[] b = System.IO.File.ReadAllBytes(participant.PhotoUrl);   // You can use your own method over here.         
-                return Ok(new { 
-                    Details = participant
-                    
-                    ,Photo = File(b, "image/jpeg") }) ;
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
         }
 
 
-
-
-
-        [HttpPut("Participant/update/{email}"), Authorize(Roles = "admin,operator")]
-        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(string email, ParticipantAdminModel model)
+        [HttpPut("SystemUser/changeMyPassword"), Authorize(Roles = "admin,operator")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
         {
             try
             {
-
-                var participant = await participantRepository.GetParticipantAsyncByEmail(email, true);
-                if (participant == null)
+                var email = User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
+                var systemUser = await systemUserRepository.GetSystemUserAsyncByEmail(email);
+                if (systemUser == null)
                 {
-                    return NotFound(new { Error = $"Participant with email {model.Email} doesn't exist" });
+                    return NotFound(new { Error = $"Participant with email {email} doesn't exist" });
                 }
 
-                if (model.Name != null)
-                {
-                    participant.Name = model.Name;
-                }
-                if (model.Email != null)
-                {
-                    var checkParticipant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
-                    if (checkParticipant != null)
-                    {
-                        return BadRequest(new { Error = $"Participant with email {model.Email} already exists" });
-                    }
+                var oldHashedPassword = HashingClass.GenerateHashedPassword(model.OldPassword, systemUser.Salt);
 
-                    participant.Email = model.Email;
+                if (oldHashedPassword != systemUser.Password)
+                {
+                    return BadRequest(new { Error = "Error is found" });
                 }
 
-                //if (model.ProfileImage != null)
-                //{
-                //    /*
-                //     * 
-                //     * 
-                //     * 
-                //     * */
-                //}
-                if (model.PlateNumberIds.Count > 0)
-                {
+                systemUser.Salt = HashingClass.GenerateSalt();
 
-                    foreach (var v in model.PlateNumberIds)
-                    {
-                        var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
-                        if (Vehicle == null)
-                        {
-                            return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
-                        }
-                        else
-                        {
-                            if (!participant.Vehicles.Contains(Vehicle))
-                            {
-
-                                participant.Vehicles.Add(Vehicle);
-                            }
-                        }
-                    }
+                systemUser.Password = HashingClass.GenerateHashedPassword(model.NewPassword, systemUser.Salt);
 
 
-                }
-
-
-                if (!await vehicleRepository.SaveChangesAsync())
+                if (!await systemUserRepository.SaveChangesAsync())
                 {
                     return BadRequest(new { Error = "Updates Not Save" });
                 }
 
-                return mapper.Map<ParticipantResponseModel>(participant);
+                return Ok(new { message = "Password Changed Successfully" });
             }
             catch (Exception ex)
             {
@@ -487,115 +252,8 @@ namespace Parking_System_API.Controllers
 
 
 
-        [HttpPost("Vehicle"), Authorize(Roles = "admin, operator")]
-        public async Task<ActionResult<Vehicle>> AddVehicle(VehicleAdminModel inputModel)
-        {
-            try
-            {
-                var o = await vehicleRepository.GetVehicleAsyncByPlateNumber(inputModel.PlateNumberId);
-                if (o != null)
-                {
-                    return BadRequest(new { Error = $"Vehicle with PlateNumber {inputModel.PlateNumberId} already Exists" });
-                }
 
 
-                var newVehicle = new Vehicle() { PlateNumberId = inputModel.PlateNumberId, IsPresent = false, IsActive = true };
-
-                if (string.IsNullOrEmpty(inputModel.BrandName))
-                {
-                    newVehicle.IsActive = false;
-                }
-                else
-                {
-                    newVehicle.BrandName = inputModel.BrandName;
-                }
-
-                if (string.IsNullOrEmpty(inputModel.SubCategory))
-                {
-                    newVehicle.IsActive = false;
-                }
-                else
-                {
-                    newVehicle.SubCategory = inputModel.SubCategory;
-                }
-
-                if (string.IsNullOrEmpty(inputModel.Color))
-                {
-                    newVehicle.IsActive = false;
-                }
-                else
-                {
-                    newVehicle.Color = inputModel.Color;
-                }
-
-                if (inputModel.StartSubscription == null)
-                {
-                    newVehicle.IsActive = false;
-                }
-                else
-                {
-                    newVehicle.StartSubscription = inputModel.StartSubscription;
-                }
-
-                if (inputModel.EndSubscription == null)
-                {
-                    newVehicle.IsActive = false;
-                }
-                else
-                {
-                    newVehicle.EndSubscription = inputModel.EndSubscription;
-                }
-                vehicleRepository.Add(newVehicle);
-
-                if (!await vehicleRepository.SaveChangesAsync())
-                {
-                    return BadRequest(new { Error = "Vehicle Not Saved" });
-                }
-
-                return Created("", mapper.Map<VehicleResponseModel>(newVehicle));
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
-        }
-
-
-
-        [HttpPost("experiment")]
-        public async Task<IActionResult> Experiment([FromBody] ExpModel model)
-        {
-            try
-            {
-                var participant = await participantRepository.GetParticipantAsyncByID(model.personID, true);
-                if (participant == null)
-                {
-                    return NotFound(new { Error = $"Participant with id {model.personID} doesn't exist" });
-                }
-
-                var vehicle = participant.Vehicles.Where(c => c.PlateNumberId == model.plateNumber).FirstOrDefault();
-                if (vehicle == null)
-                {
-                    return NotFound(new { Error = $"Vehicle with id {model.personID} doesn't exist" });
-                }
-
-                return Ok("Open Gate");
-
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
-        }
-        public string GenerateToken(int length)
-        {
-            using (RNGCryptoServiceProvider cryptRNG = new RNGCryptoServiceProvider())
-            {
-                byte[] tokenBuffer = new byte[length];
-                cryptRNG.GetBytes(tokenBuffer);
-                return Convert.ToBase64String(tokenBuffer);
-            }
-        }
 
 
     }

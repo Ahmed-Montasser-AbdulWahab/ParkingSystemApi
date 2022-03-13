@@ -7,7 +7,7 @@ namespace Parking_System_API.Email
 {
     public class EmailCode
     {
-        public static bool SendEmail(string ToEmail, string password)
+        public static bool SendEmail(string ToEmail, string password, string mode = "Registration")
         {
             try
             {
@@ -17,7 +17,7 @@ namespace Parking_System_API.Email
 
                 mail.From = new MailAddress(System.Environment.GetEnvironmentVariable("EMAIL") ?? throw new NullReferenceException());
                 mail.To.Add(ToEmail);
-                mail.Subject = "Parking System Account Registration";
+                mail.Subject = $"Parking System Account {mode}";
                 mail.Body = $"Your Password is {password}";
 
                 smtp.Port = 587;
