@@ -19,8 +19,7 @@ namespace Parking_System_API.Helper
 
             var user = new UploadPicture
             {
-                Id = id,
-                pic = picture
+                Picture = picture
             };
             var json = JsonSerializer.Serialize(user);
             var data = new StringContent(json, Encoding.UTF8, "application/json");

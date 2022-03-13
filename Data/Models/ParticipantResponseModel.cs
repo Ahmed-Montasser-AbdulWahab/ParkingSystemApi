@@ -8,6 +8,8 @@
 
         public string Email { get; set; }
 
+        public VehicleParticipantModel Vehicles { get; set; }
+        public bool DoProvideFullData { get; set; }
         public bool DoProvidePhoto { get; set; }
         
         public string PhotoUrl { get; set; }

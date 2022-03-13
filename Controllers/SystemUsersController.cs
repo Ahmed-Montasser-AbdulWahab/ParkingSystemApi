@@ -161,19 +161,23 @@ namespace Parking_System_API.Controllers
             }
         }
 
-        [HttpGet("getByName/{name}"), Authorize(Roles = "admin")]
-        public async Task<ActionResult<SystemUserResponseModel[]>> GetAllSystemUsersByName(string name)
+        [HttpGet("SystemUser/{email?}"), Authorize(Roles = "admin")]
+        public async Task<ActionResult<SystemUserResponseModel>> GetSystemUser(string email)
         {
             try
             {
-                var systemUsers = await systemUserRepository.GetSystemUsersAsyncByName(name);
-                if (systemUsers.Length == 0)
+                if (string.IsNullOrEmpty(email))
                 {
-                    return NotFound(new { Error = $"No SystemUsers with name : {name} Exist" });
+                    email = User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
+                }
+                var systemUser = await systemUserRepository.GetSystemUserAsyncByEmail(email);
+                if (systemUser == null)
+                {
+                    return NotFound(new { Error = $"System User with {systemUser.Email} not Found" });
 
                 }
-                SystemUserResponseModel[] models = mapper.Map<SystemUserResponseModel[]>(systemUsers);
-                return models;
+                SystemUserResponseModel model = mapper.Map<SystemUserResponseModel>(systemUser);
+                return model;
             }
             catch (Exception)
             {
@@ -191,7 +195,10 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = $"Participant of Email {model.Email} doesn't Exist." });
                 }
-
+                if (systemUser.IsPowerAccount)
+                {
+                    return BadRequest(new { Error = $"It is a Power Account. No Changes." });
+                }
                 var password = TokenGeneration.GenerateToken(8);
 
                 systemUser.Salt = HashingClass.GenerateSalt();

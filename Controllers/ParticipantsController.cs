@@ -241,22 +241,22 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPost("uploadProfilePicture"), Authorize(Roles = "admin,operator")]
-        public async Task<IActionResult> UploadProfilePicture([FromForm] UploadPicture upload)
+        [HttpPost("{id:long}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
+        public async Task<IActionResult> UploadProfilePicture(long id,[FromForm] UploadPicture upload, bool changePicMode = false)
         {//DAMANA
             try
             {
-                var participant = await participantRepository.GetParticipantAsyncByID(upload.Id);
+                var participant = await participantRepository.GetParticipantAsyncByID(id);
                 if (participant is null)
                 {
-                    return BadRequest(new { Error = $"Participant of Id {upload.Id} doesn't Exist." });
+                    return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
                 }
                 var pic = upload.Picture;
                 if (pic.ContentType != "image/jpeg")
                 {
                     return BadRequest(new { Error = $"Please Upload JPG File." });
                 }
-                var path = $".\\wwwroot\\images\\Participants\\{upload.Id}.jpg";
+                var path = $".\\wwwroot\\images\\Participants\\{id}.jpg";
 
                 //Connection Lost ??? 
 
@@ -267,9 +267,10 @@ namespace Parking_System_API.Controllers
 
 
                 participant.DoProvidePhoto = true;
-                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{upload.Id}.jpg";
+                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{id}.jpg";
 
                 participant.DoDetected = true;
+
                 //Muhammed Samy
                 /*
                  * 
@@ -292,13 +293,24 @@ namespace Parking_System_API.Controllers
                 {
                     participant.Status = true;
                 }
-
-                if (!await participantRepository.SaveChangesAsync())
+                else
                 {
-                    return BadRequest(new { Error = "Try Again adding Photo" });
+                    participant.Status = false;
                 }
-                var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                return Created("", new { Participant = response_model, Message = "Photo is Created" });
+
+
+                //5atar
+                if (await participantRepository.SaveChangesAsync())
+                {
+                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.ParticipantId }), new { Participant = response_model, Message = "Photo is Created" });
+                    
+                } else if (changePicMode)
+                {
+                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
+                    return Ok(new { Message = "Picture was changed Successfully" });
+                }
+                return BadRequest(new { Error = "Try Again adding Photo" });
 
             }
             catch (Exception ex)
@@ -308,8 +320,8 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpPost("uploadMyProfilePicture"), Authorize(Roles = "customer")]
-        public async Task<IActionResult> UploadProfilePictureForMe([FromForm] UploadMyPicture upload)
+        [HttpPost("uploadMyProfilePicture"), Authorize(Roles = "participant")]
+        public async Task<IActionResult> UploadProfilePictureForMe([FromForm] UploadPicture upload, bool changePicMode = false)
         {//DAMANA
             try
             {
@@ -365,13 +377,18 @@ namespace Parking_System_API.Controllers
                     participant.Status = false;
                 }
 
-                if (!await participantRepository.SaveChangesAsync())
+                if (await participantRepository.SaveChangesAsync())
                 {
-                    return BadRequest(new { Error = "Try Again adding Photo" });
-                }
-                var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                return Created("", new { Participant = response_model, Message = "Photo is Created" });
+                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.ParticipantId }), new { Participant = response_model, Message = "Photo is Created" });
 
+                }
+                else if (changePicMode)
+                {
+                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
+                    return Ok(new { Message = "Picture was changed Successfully" });
+                }
+                return BadRequest(new { Error = "Try Again adding Photo" });
             }
             catch (Exception ex)
             {
@@ -408,7 +425,7 @@ namespace Parking_System_API.Controllers
             }
 
         }
-        [HttpGet("Participant/{id:long}"), Authorize(Roles = "admin, operator")]
+        [HttpGet("{id:long}"), Authorize(Roles = "admin, operator")]
         public async Task<ActionResult<ParticipantResponseModel>> GetParticipant(long id)
         {
             try
@@ -428,7 +445,7 @@ namespace Parking_System_API.Controllers
             }
         }
 
-        [HttpGet("me"), Authorize(Roles = "customer")]
+        [HttpGet("me"), Authorize(Roles = "participant")]
         public async Task<ActionResult<ParticipantResponseModel>> GetMe()
         {
             try
@@ -450,114 +467,8 @@ namespace Parking_System_API.Controllers
 
 
         }
-        [HttpPut("Participant/update-admin/{email}"), Authorize(Roles = "admin,operator")]
-        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipantForAdmin(string email, [FromBody] ParticipantAdminModel model)
-        {
-            try
-            {
 
-                var participant = await participantRepository.GetParticipantAsyncByEmail(email, true);
-
-                if (participant == null)
-                {
-                    return NotFound(new { Error = $"Participant with email {email} doesn't exist" });
-                }
-
-
-                if (model.Id != null)
-                {
-                    participant.ParticipantId = model.Id.Value;
-                }
-                if (model.Name != null)
-                {
-                    participant.Name = model.Name;
-                }
-                if (model.Email != null)
-                {
-                    var checkParticipant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
-                    if (checkParticipant != null)
-                    {
-                        return BadRequest(new { Error = $"Participant with email {model.Email} already exists" });
-                    }
-
-                    participant.Email = model.Email;
-                }
-
-                if (model.PlateNumberIds is not null && model.PlateNumberIds.Count > 0)
-                {
-
-                    foreach (var v in model.PlateNumberIds)
-                    {
-                        var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
-                        if (Vehicle == null)
-                        {
-                            return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
-                        }
-                        else
-                        {
-                            if (!participant.Vehicles.Contains(Vehicle))
-                            {
-
-                                participant.Vehicles.Add(Vehicle);
-                            }
-                        }
-                    }
-
-
-                }
-
-                if (participant.Name is null || participant.Vehicles is null || participant.Vehicles.Count < 1)
-                {
-
-                    participant.DoProvideFullData = false;
-                }
-                else
-                {
-                    participant.DoProvideFullData = true;
-                }
-
-                if (participant.PhotoUrl == ".\\wwwroot\\images\\Anonymous.jpg")
-                {
-                    
-                    participant.DoProvidePhoto = false;
-                    participant.DoDetected = false;
-                }
-                else
-                {
-                    participant.DoProvidePhoto = true;
-                }
-
-                if (participant.DoProvidePhoto && participant.DoProvideFullData)
-                {
-                    if (participant.DoDetected)
-                    {
-                        participant.Status = true;
-                    }
-                    else
-                    {
-                        participant.Status = false;
-                    }
-                }
-                else
-                {
-                    participant.Status = false;
-                }
-
-
-                if (!await participantRepository.SaveChangesAsync())
-                {
-                    return BadRequest(new { Error = "Updates Not Save" });
-                }
-
-                return mapper.Map<ParticipantResponseModel>(participant);
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
-        }
-
-        [HttpPut("Participant/updateById-admin/{id:long}"), Authorize(Roles = "admin,operator")]
+        [HttpPut("{id:long}/updateById-admin"), Authorize(Roles = "admin,operator")]
         public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(long id, [FromBody] ParticipantAdminModel model)
         {
             try
@@ -641,7 +552,7 @@ namespace Parking_System_API.Controllers
 
                 if (!await participantRepository.SaveChangesAsync())
                 {
-                    return BadRequest(new { Error = "Updates Not Save" });
+                    return BadRequest(new { Error = "No Changes Saved" });
                 }
 
                 return mapper.Map<ParticipantResponseModel>(participant);
@@ -653,44 +564,44 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpPut("Participant/changeMyPassword"), Authorize(Roles = "participant")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
-        {
-            try
-            {
-                var email = User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
-                var participant = await participantRepository.GetParticipantAsyncByEmail(email);
-                if (participant == null)
-                {
-                    return NotFound(new { Error = $"Participant with email {email} doesn't exist" });
-                }
+        //[HttpPut("Participant/changeMyPassword"), Authorize(Roles = "participant")]
+        //public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
+        //{
+        //    try
+        //    {
+        //        var email = User.Claims.First(i => i.Type == ClaimTypes.Email).Value;
+        //        var participant = await participantRepository.GetParticipantAsyncByEmail(email);
+        //        if (participant == null)
+        //        {
+        //            return NotFound(new { Error = $"Participant with email {email} doesn't exist" });
+        //        }
 
-                var oldHashedPassword = HashingClass.GenerateHashedPassword(model.OldPassword, participant.Salt);
+        //        var oldHashedPassword = HashingClass.GenerateHashedPassword(model.OldPassword, participant.Salt);
 
-                if (oldHashedPassword != participant.Password)
-                {
-                    return BadRequest(new { Error = "Error is found" });
-                }
+        //        if (oldHashedPassword != participant.Password)
+        //        {
+        //            return BadRequest(new { Error = "Error is found" });
+        //        }
 
-                participant.Salt = HashingClass.GenerateSalt();
+        //        participant.Salt = HashingClass.GenerateSalt();
 
-                participant.Password = HashingClass.GenerateHashedPassword(model.NewPassword, participant.Salt);
+        //        participant.Password = HashingClass.GenerateHashedPassword(model.NewPassword, participant.Salt);
 
 
-                if (!await participantRepository.SaveChangesAsync())
-                {
-                    return BadRequest(new { Error = "Updates Not Save" });
-                }
+        //        if (!await participantRepository.SaveChangesAsync())
+        //        {
+        //            return BadRequest(new { Error = "Updates Not Save" });
+        //        }
 
-                return Ok(new { message = "Password Changed Successfully" });
-            }
-            catch (Exception ex)
-            {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
-            }
-        }
+        //        return Ok(new { message = "Password Changed Successfully" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+        //    }
+        //}
 
-        [HttpPut("Participant/changeMyPasswordById"), Authorize(Roles = "participant")]
+        [HttpPut("changeMyPassword"), Authorize(Roles = "participant")]
         public async Task<IActionResult> ChangePasswordByID([FromBody] ChangePasswordModel model)
         {
             try
