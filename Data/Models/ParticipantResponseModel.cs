@@ -8,7 +8,7 @@
 
         public string Email { get; set; }
 
-        public VehicleResponseModel Vehicles { get; set; }
+        public VehicleResponseModel[] Vehicles { get; set; }
         public bool DoProvideFullData { get; set; }
         public bool DoProvidePhoto { get; set; }
         

@@ -8,7 +8,7 @@ namespace Parking_System_API.Data.ProjectProfile
     {
         public ParticipantProfile()
         {
-            this.CreateMap<Participant, ParticipantResponseModel>();
+            this.CreateMap<Participant, ParticipantResponseModel>().ForMember(c => c.Vehicles, o=>o.MapFrom(l => l.Vehicles));
         }
     }
 }

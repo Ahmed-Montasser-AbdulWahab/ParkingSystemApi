@@ -8,8 +8,6 @@ namespace Parking_System_API.Data.Models
     public class ParticipantEditAdminModel
     {
         
-        public long? Id { get; set; }
-        public bool IsEgyptian { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
 

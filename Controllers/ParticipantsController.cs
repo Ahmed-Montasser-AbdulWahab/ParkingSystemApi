@@ -430,7 +430,7 @@ namespace Parking_System_API.Controllers
         {
             try
             {
-                var participant = await participantRepository.GetParticipantAsyncByID(id);
+                var participant = await participantRepository.GetParticipantAsyncByID(id,true);
                 if (participant is null)
                 {
                     return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
@@ -468,26 +468,26 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPut("{id:long}/updateById-admin"), Authorize(Roles = "admin,operator")]
-        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(long id, [FromBody] ParticipantAdminModel model)
+        [HttpPut("{id:long}/update-admin"), Authorize(Roles = "admin,operator")]
+        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(long id, [FromBody] ParticipantEditAdminModel model)
         {
             try
             {
 
                 var participant = await participantRepository.GetParticipantAsyncByID(id, true);
+                
                 if (participant == null)
                 {
                     return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
                 }
-                if (model.Id != null)
-                {
-                    participant.ParticipantId = model.Id.Value;
-                }
-                if (model.Name != null)
+                
+                
+                if (model.Name != null && model.Name != participant.Name)
                 {
                     participant.Name = model.Name;
+                    
                 }
-                if (model.Email != null)
+                if (model.Email != null && model.Email != participant.Email)
                 {
                     var checkParticipant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
                     if (checkParticipant != null)
@@ -498,26 +498,26 @@ namespace Parking_System_API.Controllers
                     participant.Email = model.Email;
                 }
 
-                if (model.PlateNumberIds is not null && model.PlateNumberIds.Count > 0)
+                if (model.PlateNumberIds is not null )
                 {
-
-                    foreach (var v in model.PlateNumberIds)
+                    participant.Vehicles.Clear();
+                    if (model.PlateNumberIds.Count > 0)
                     {
-                        var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
-                        if (Vehicle == null)
+                        foreach (var v in model.PlateNumberIds)
                         {
-                            return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
-                        }
-                        else
-                        {
-                            if (!participant.Vehicles.Contains(Vehicle))
-                            {
 
+                            var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
+                            if (Vehicle == null)
+                            {
+                                return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
+                            }
+                            else
+                            {
                                 participant.Vehicles.Add(Vehicle);
+
                             }
                         }
                     }
-
 
                 }
 
@@ -563,6 +563,101 @@ namespace Parking_System_API.Controllers
             }
         }
 
+        [HttpPut("update-me"), Authorize(Roles = "participant")]
+        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant([FromBody] ParticipantEditAdminModel model)
+        {
+            try
+            {
+                var id = User.Claims.First(i => i.Type == "ParticipantID").Value;
+
+                var participant = await participantRepository.GetParticipantAsyncByID(long.Parse(id), true);
+
+                if (participant == null)
+                {
+                    return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
+                }
+
+
+                if (model.Name != null && model.Name != participant.Name)
+                {
+                    participant.Name = model.Name;
+
+                }
+                if (model.Email != null && model.Email != participant.Email)
+                {
+                    var checkParticipant = await participantRepository.GetParticipantAsyncByEmail(model.Email);
+                    if (checkParticipant != null)
+                    {
+                        return BadRequest(new { Error = $"Participant with email {model.Email} already exists" });
+                    }
+
+                    participant.Email = model.Email;
+                }
+
+                if (model.PlateNumberIds is not null)
+                {
+                    participant.Vehicles.Clear();
+                    if (model.PlateNumberIds.Count > 0)
+                    {
+                        foreach (var v in model.PlateNumberIds)
+                        {
+
+                            var Vehicle = await vehicleRepository.GetVehicleAsyncByPlateNumber(v);
+                            if (Vehicle == null)
+                            {
+                                return BadRequest(new { Error = $"No Vehicle saved with the provided License Plate {v}" });
+                            }
+                            else
+                            {
+                                participant.Vehicles.Add(Vehicle);
+
+                            }
+                        }
+                    }
+
+                }
+
+                if (participant.Name is null || participant.Vehicles is null || participant.Vehicles.Count < 1)
+                {
+
+                    participant.DoProvideFullData = false;
+                }
+                else
+                {
+                    participant.DoProvideFullData = true;
+                }
+
+                if (participant.PhotoUrl == ".\\wwwroot\\images\\Anonymous.jpg")
+                {
+                    participant.DoProvidePhoto = false;
+                }
+                else
+                {
+                    participant.DoProvidePhoto = true;
+                }
+
+                if (participant.DoProvidePhoto && participant.DoProvideFullData)
+                {
+                    participant.Status = true;
+                }
+                else
+                {
+                    participant.Status = false;
+                }
+
+
+                if (!await participantRepository.SaveChangesAsync())
+                {
+                    return BadRequest(new { Error = "No Changes Saved" });
+                }
+
+                return mapper.Map<ParticipantResponseModel>(participant);
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+            }
+        }
 
         //[HttpPut("Participant/changeMyPassword"), Authorize(Roles = "participant")]
         //public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
