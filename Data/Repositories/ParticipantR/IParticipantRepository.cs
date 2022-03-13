@@ -13,6 +13,7 @@ namespace Parking_System_API.Data.Repositories.ParticipantR
         // SystemUsers
         Task<Participant[]> GetAllParticipants(bool getVehicles = false, bool getTransactions = false);
         Task<Participant> GetParticipantAsyncByEmail(string email, bool getVehicles = false, bool getTransactions = false);
-        Task<Participant> GetParticipantAsyncByID(long id, bool getVehicles = false, bool getTransactions = false);
+        Task<Participant> GetParticipantAsyncByNationalID(long NationalId, bool getVehicles = false, bool getTransactions = false);
+        Task<Participant> GetParticipantAsyncByID(string id, bool getVehicles = false, bool getTransactions = false);
     }
 }

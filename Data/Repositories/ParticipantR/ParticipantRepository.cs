@@ -66,7 +66,7 @@ namespace Parking_System_API.Data.Repositories.ParticipantR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Participant> GetParticipantAsyncByID(long id, bool getVehicles = false, bool getTransactions = false)
+        public async Task<Participant> GetParticipantAsyncByNationalID(long NationalId, bool getVehicles = false, bool getTransactions = false)
         {
             IQueryable<Participant> query = _context.Participants;
 
@@ -82,12 +82,31 @@ namespace Parking_System_API.Data.Repositories.ParticipantR
             }
 
             // Order It
-            query = query.Where(c => c.ParticipantId == id);
+            query = query.Where(c => c.NationalId == NationalId);
 
             return await query.FirstOrDefaultAsync();
         }
+        public async Task<Participant> GetParticipantAsyncByID(string id, bool getVehicles = false, bool getTransactions = false)
+        {
+            IQueryable<Participant> query = _context.Participants;
 
-        public async Task<bool> SaveChangesAsync()
+            if (getVehicles)
+            {
+                query = query
+                  .Include(c => c.Vehicles);
+            }
+
+            if (getTransactions)
+            {
+                query = query.Include(c => c.ParkingTransactions);
+            }
+
+            // Order It
+            query = query.Where(c => c.Id == id);
+
+            return await query.FirstOrDefaultAsync();
+        }
+            public async Task<bool> SaveChangesAsync()
         {
             return (await _context.SaveChangesAsync()) > 0;
         }

@@ -49,7 +49,7 @@ namespace Parking_System_API.Data.DBContext
                 );
             mb.Entity<SystemUser>().HasKey(p => new { p.Email });
             mb.Entity<SystemUser>().Property(p => p.IsPowerAccount).HasDefaultValue(false);
-            mb.Entity<Participant>().HasKey(p => new { p.ParticipantId });
+
             mb.Entity<Vehicle>().HasKey(p => new { p.PlateNumberId });
             mb.Entity<Hardware>().HasKey(p => new { p.HardwareId });
             mb.Entity<ParkingTransaction>().HasKey(p => new { p.ParticipantId , p.PlateNumberId, p.HardwareId, p.DateTimeTransaction});
@@ -68,6 +68,7 @@ namespace Parking_System_API.Data.DBContext
             mb.Entity<Participant>().HasMany(p => p.Vehicles).WithMany(e => e.Participants).UsingEntity(j => j.ToTable("Participant_Vehicle"));
             mb.Entity<Participant>(entity => {
                 entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.NationalId).IsUnique();
             });
             mb.Entity<Hardware>(entity => {
                 entity.HasIndex(e => e.ConnectionString).IsUnique();
@@ -79,7 +80,6 @@ namespace Parking_System_API.Data.DBContext
                 Value = 10000000000000,
 
             });
-            mb.Entity<Participant>().Property(c => c.ParticipantId).ValueGeneratedNever();
             mb.Entity<Vehicle>().Property(c => c.PlateNumberId).ValueGeneratedNever();
 
         }

@@ -44,7 +44,7 @@ namespace Parking_System_API
                 Subject = new ClaimsIdentity(new List<Claim>
                 {
                     new Claim(ClaimTypes.Email, email),
-                    new Claim("ParticipantID", participant.ParticipantId.ToString()),
+                    new Claim("ParticipantID", participant.Id),
                     new Claim(ClaimTypes.Role, "participant")
                   
                 }),

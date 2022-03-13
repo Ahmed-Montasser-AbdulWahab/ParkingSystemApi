@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Parking_System_API.Migrations
 {
-    public partial class InitializeDB : Migration
+    public partial class InitialDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -42,18 +42,35 @@ namespace Parking_System_API.Migrations
                 name: "Participants",
                 columns: table => new
                 {
-                    ParticipantId = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    NationalId = table.Column<long>(type: "bigint", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: ".\\wwwroot\\images\\Anonymous.jpg"),
+                    DoProvideFullData = table.Column<bool>(type: "bit", nullable: false),
                     DoProvidePhoto = table.Column<bool>(type: "bit", nullable: false),
                     DoDetected = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Participants", x => x.ParticipantId);
+                    table.PrimaryKey("PK_Participants", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AbbreviationRole = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -64,7 +81,7 @@ namespace Parking_System_API.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsAdmin = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsPowerAccount = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -82,8 +99,8 @@ namespace Parking_System_API.Migrations
                     Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartSubscription = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndSubscription = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsPresent = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    IsPresent = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -94,7 +111,7 @@ namespace Parking_System_API.Migrations
                 name: "ParkingTransactions",
                 columns: table => new
                 {
-                    ParticipantId = table.Column<long>(type: "bigint", nullable: false),
+                    ParticipantId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PlateNumberId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     HardwareId = table.Column<int>(type: "int", nullable: false),
                     DateTimeTransaction = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -108,36 +125,36 @@ namespace Parking_System_API.Migrations
                         column: x => x.HardwareId,
                         principalTable: "Hardwares",
                         principalColumn: "HardwareId",
-                        onDelete: ReferentialAction.NoAction);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Participants_ParticipantId",
                         column: x => x.ParticipantId,
                         principalTable: "Participants",
-                        principalColumn: "ParticipantId",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Vehicles_PlateNumberId",
                         column: x => x.PlateNumberId,
                         principalTable: "Vehicles",
                         principalColumn: "PlateNumberId",
-                        onDelete: ReferentialAction.NoAction);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Participant_Vehicle",
                 columns: table => new
                 {
-                    ParticipantsParticipantId = table.Column<long>(type: "bigint", nullable: false),
+                    ParticipantsId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     VehiclesPlateNumberId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Participant_Vehicle", x => new { x.ParticipantsParticipantId, x.VehiclesPlateNumberId });
+                    table.PrimaryKey("PK_Participant_Vehicle", x => new { x.ParticipantsId, x.VehiclesPlateNumberId });
                     table.ForeignKey(
-                        name: "FK_Participant_Vehicle_Participants_ParticipantsParticipantId",
-                        column: x => x.ParticipantsParticipantId,
+                        name: "FK_Participant_Vehicle_Participants_ParticipantsId",
+                        column: x => x.ParticipantsId,
                         principalTable: "Participants",
-                        principalColumn: "ParticipantId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Participant_Vehicle_Vehicles_VehiclesPlateNumberId",
@@ -153,9 +170,19 @@ namespace Parking_System_API.Migrations
                 values: new object[] { 1, "ForeignID", null, 10000000000000L });
 
             migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "AbbreviationRole", "RoleName" },
+                values: new object[,]
+                {
+                    { 1, "p", "participant" },
+                    { 2, "a", "admin" },
+                    { 3, "o", "operator" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "SystemUsers",
                 columns: new[] { "Email", "IsAdmin", "IsPowerAccount", "Name", "Password", "Salt" },
-                values: new object[] { "admin@admin.com", true, true, "Power Admin", "3KqotRtgt+Tov/S5OirJdzBSHGzMDjGmARqG/lPnjv8=", "UPr5RNdUtp/HW5w2WyOsoQ==" });
+                values: new object[] { "admin@admin.com", true, true, "Power Admin", "C4gOD/EmnwIFawHclyzZWWS2WKdWxYjkGjv3D/mx+Wg=", "/CDKAr7P0xgr22AoMNrajQ==" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Hardwares_ConnectionString",
@@ -184,6 +211,12 @@ namespace Parking_System_API.Migrations
                 table: "Participants",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Participants_NationalId",
+                table: "Participants",
+                column: "NationalId",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -196,6 +229,9 @@ namespace Parking_System_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Participant_Vehicle");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "SystemUsers");

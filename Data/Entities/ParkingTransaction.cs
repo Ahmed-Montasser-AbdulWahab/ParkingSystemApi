@@ -6,7 +6,7 @@ namespace Parking_System_API.Data.Entities
 {
     public class ParkingTransaction
     {   [Key, Required, ForeignKey("FK_Participant_RelatedTo")]
-        public long ParticipantId { get; set; }
+        public string ParticipantId { get; set; }
         [Key, Required, ForeignKey("FK_Vehicle_RelatedTo")]
         public string PlateNumberId { get; set; }
         [Key, Required, ForeignKey("FK_Hardware_RelatedTo")]

@@ -79,8 +79,8 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
                 {
-                    b.Property<long>("ParticipantId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("ParticipantId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PlateNumberId")
                         .HasColumnType("nvarchar(450)");
@@ -105,8 +105,8 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Participant", b =>
                 {
-                    b.Property<long>("ParticipantId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("DoDetected")
                         .HasColumnType("bit");
@@ -124,6 +124,9 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("NationalId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -140,9 +143,12 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("ParticipantId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("NationalId")
                         .IsUnique();
 
                     b.ToTable("Participants");
@@ -223,8 +229,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "vfp9AsGFdXSqazDrqpwt3CbUTGL3Tm5tytFCZ0hEbn8=",
-                            Salt = "uTSU0e4sOEUjXURMHAeJ4Q=="
+                            Password = "C4gOD/EmnwIFawHclyzZWWS2WKdWxYjkGjv3D/mx+Wg=",
+                            Salt = "/CDKAr7P0xgr22AoMNrajQ=="
                         });
                 });
 
@@ -261,13 +267,13 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("ParticipantVehicle", b =>
                 {
-                    b.Property<long>("ParticipantsParticipantId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("ParticipantsId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("VehiclesPlateNumberId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ParticipantsParticipantId", "VehiclesPlateNumberId");
+                    b.HasKey("ParticipantsId", "VehiclesPlateNumberId");
 
                     b.HasIndex("VehiclesPlateNumberId");
 
@@ -305,7 +311,7 @@ namespace Parking_System_API.Migrations
                 {
                     b.HasOne("Parking_System_API.Data.Entities.Participant", null)
                         .WithMany()
-                        .HasForeignKey("ParticipantsParticipantId")
+                        .HasForeignKey("ParticipantsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
