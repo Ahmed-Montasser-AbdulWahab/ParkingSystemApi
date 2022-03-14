@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Newtonsoft.Json.Linq;
 using Parking_System_API.Data.Entities;
 using Parking_System_API.Data.Models;
 using Parking_System_API.Data.Repositories.ConstantsR;
@@ -286,8 +287,19 @@ namespace Parking_System_API.Controllers
                  * 
                  * 
                  */
-                //   string result = await FaceDetectionApi.Detect(upload.Id, upload.pic);
-
+                string img_path = participant.PhotoUrl;
+                string result = await FaceDetectionApi.Detect(id, img_path);
+                JObject json = JObject.Parse(result);
+                if (json["preprocessing_response"].ToString() == "1" && json["model_response"].ToString() == "1") 
+                {
+                    participant.DoDetected = true;
+                }
+                else 
+                {
+                    participant.DoDetected = false;
+                }
+                    //response  if succeeded => (result.preprocessing_response && result.model_response)
+                    Console.WriteLine(result);
 
                 if (participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoDetected)
                 {

@@ -15,13 +15,13 @@ namespace Parking_System_API.Email
                 MailMessage mail = new MailMessage();
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com");
 
-                mail.From = new MailAddress(System.Environment.GetEnvironmentVariable("EMAIL") ?? throw new NullReferenceException());
+                mail.From = new MailAddress(System.Environment.GetEnvironmentVariable("EMAIL") ?? throw new ArgumentNullException()) ;
                 mail.To.Add(ToEmail);
                 mail.Subject = $"Parking System Account {mode}";
                 mail.Body = $"Your Password is {password}";
 
                 smtp.Port = 587;
-                smtp.Credentials = new NetworkCredential(System.Environment.GetEnvironmentVariable("EMAIL") ?? throw new NullReferenceException(), System.Environment.GetEnvironmentVariable("PASSWORD") ?? throw new NullReferenceException());
+                smtp.Credentials = new NetworkCredential(System.Environment.GetEnvironmentVariable("EMAIL") ?? throw new ArgumentNullException(), System.Environment.GetEnvironmentVariable("PASSWORD") ?? throw new ArgumentNullException());
                 smtp.EnableSsl = true;
 
                 smtp.Send(mail);
