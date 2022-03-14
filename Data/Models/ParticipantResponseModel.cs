@@ -2,8 +2,8 @@
 {
     public class ParticipantResponseModel
     {
-        public long ParticipantId { get; set; }
-
+        public string Id { get; set; }
+        public long NationalId { get; set; }
         public string Name { get; set; }
 
         public string Email { get; set; }

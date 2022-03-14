@@ -7,8 +7,8 @@ namespace Parking_System_API.Data.Models
 {
     public class ParticipantAdminModel
     {
-        
-        public long? Id { get; set; }
+        [Required]
+        public long? NationalId { get; set; }
         [Required]
         public bool IsEgyptian { get; set; }
         public string Name { get; set; }

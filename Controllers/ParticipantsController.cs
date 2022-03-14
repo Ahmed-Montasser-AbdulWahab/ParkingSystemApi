@@ -46,7 +46,7 @@ namespace Parking_System_API.Controllers
         {
             try
             {
-                var participants = await participantRepository.GetAllParticipants();
+                var participants = await participantRepository.GetAllParticipants(true);
                 if (participants.Length == 0)
                 {
                     return NotFound(new { Error = "No Participants Exist" });
@@ -118,25 +118,25 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = $"Participant with email {model.Email} already exists" });
                 }
-                if (model.Id != null)
+                if (model.NationalId != null)
                 {
-                    participant = await participantRepository.GetParticipantAsyncByID(model.Id.Value);
+                    participant = await participantRepository.GetParticipantAsyncByNationalID(model.NationalId.Value);
                     if (participant != null)
                     {
-                        return BadRequest(new { Error = $"Participant with id {model.Id.Value} already exists" });
+                        return BadRequest(new { Error = $"Participant with id {model.NationalId.Value} already exists" });
                     }
                 }
 
-                participant = new Participant() { Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg" };
+                participant = new Participant() { Id = Guid.NewGuid().ToString() ,Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg" };
                 if (model.IsEgyptian)
                 {
-                    if (model.Id == null || model.Id < 2000000000000)
+                    if (model.NationalId == null || model.NationalId < 2000000000000)
                     {
                         return BadRequest(new { Error = "Please provide National Id" });
                     }
                     else
                     {
-                        participant.ParticipantId = model.Id.Value;
+                        participant.NationalId = model.NationalId.Value;
                     }
 
                 }
@@ -145,7 +145,7 @@ namespace Parking_System_API.Controllers
                 {
                     var Constant = await constantRepository.GetForeignIdAsync();
 
-                    participant.ParticipantId = Constant.Value;
+                    participant.NationalId = Constant.Value;
                     Constant.Value++;
 
                     if (!await constantRepository.SaveChangesAsync())
@@ -230,19 +230,19 @@ namespace Parking_System_API.Controllers
 
                 Email.EmailCode.SendEmail(participant.Email, password);
                 var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.ParticipantId }), new { Participant = response_model, Message = "Please Add a photo" });
+                return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Please Add a photo" });
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error");
             }
 
 
         }
 
-        [HttpPost("{id:long}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
-        public async Task<IActionResult> UploadProfilePicture(long id,[FromForm] UploadPicture upload, bool changePicMode = false)
+        [HttpPost("{id}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
+        public async Task<IActionResult> UploadProfilePicture(string id,[FromForm] UploadPicture upload, bool changePicMode = false)
         {//DAMANA
             try
             {
@@ -303,7 +303,7 @@ namespace Parking_System_API.Controllers
                 if (await participantRepository.SaveChangesAsync())
                 {
                     var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.ParticipantId }), new { Participant = response_model, Message = "Photo is Created" });
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Photo is Created" });
                     
                 } else if (changePicMode)
                 {
@@ -326,7 +326,7 @@ namespace Parking_System_API.Controllers
             try
             {
                 var id = User.Claims.First(i => i.Type == "ParticipantID").Value;
-                var participant = await participantRepository.GetParticipantAsyncByID(long.Parse(id));
+                var participant = await participantRepository.GetParticipantAsyncByID(id);
                 if (participant is null)
                 {
                     return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
@@ -380,7 +380,7 @@ namespace Parking_System_API.Controllers
                 if (await participantRepository.SaveChangesAsync())
                 {
                     var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.ParticipantId }), new { Participant = response_model, Message = "Photo is Created" });
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Photo is Created" });
 
                 }
                 else if (changePicMode)
@@ -425,8 +425,8 @@ namespace Parking_System_API.Controllers
             }
 
         }
-        [HttpGet("{id:long}"), Authorize(Roles = "admin, operator")]
-        public async Task<ActionResult<ParticipantResponseModel>> GetParticipant(long id)
+        [HttpGet("{id}"), Authorize(Roles = "admin, operator")]
+        public async Task<ActionResult<ParticipantResponseModel>> GetParticipant(string id)
         {
             try
             {
@@ -451,7 +451,7 @@ namespace Parking_System_API.Controllers
             try
             {
                 var id = User.Claims.First(i => i.Type == "ParticipantID").Value;
-                var participant = await participantRepository.GetParticipantAsyncByID(long.Parse(id));
+                var participant = await participantRepository.GetParticipantAsyncByID(id, true);
                 if (participant == null)
                 {
                     return NotFound(new { Error = $"Participant with id {id} not Found" });
@@ -468,8 +468,8 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPut("{id:long}/update-admin"), Authorize(Roles = "admin,operator")]
-        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(long id, [FromBody] ParticipantEditAdminModel model)
+        [HttpPut("{id}/update-admin"), Authorize(Roles = "admin,operator")]
+        public async Task<ActionResult<ParticipantResponseModel>> UpdateParticipant(string id, [FromBody] ParticipantEditAdminModel model)
         {
             try
             {
@@ -480,8 +480,21 @@ namespace Parking_System_API.Controllers
                 {
                     return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
                 }
-                
-                
+
+                if (model.IsEgyptian)
+                {
+                    if (model.NationalId == null || model.NationalId < 2000000000000)
+                    {
+                        return BadRequest(new { Error = "Please provide National Id" });
+                    }
+                    else
+                    {
+                        participant.NationalId = model.NationalId.Value;
+                    }
+
+                }
+
+
                 if (model.Name != null && model.Name != participant.Name)
                 {
                     participant.Name = model.Name;
@@ -570,13 +583,25 @@ namespace Parking_System_API.Controllers
             {
                 var id = User.Claims.First(i => i.Type == "ParticipantID").Value;
 
-                var participant = await participantRepository.GetParticipantAsyncByID(long.Parse(id), true);
+                var participant = await participantRepository.GetParticipantAsyncByID(id, true);
 
                 if (participant == null)
                 {
                     return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
                 }
 
+                if (model.IsEgyptian)
+                {
+                    if (model.NationalId == null || model.NationalId < 2000000000000)
+                    {
+                        return BadRequest(new { Error = "Please provide National Id" });
+                    }
+                    else
+                    {
+                        participant.NationalId = model.NationalId.Value;
+                    }
+
+                }
 
                 if (model.Name != null && model.Name != participant.Name)
                 {
@@ -702,7 +727,7 @@ namespace Parking_System_API.Controllers
             try
             {
                 var id = User.Claims.First(i => i.Type == "ParticipantID").Value;
-                var participant = await participantRepository.GetParticipantAsyncByID(long.Parse(id));
+                var participant = await participantRepository.GetParticipantAsyncByID(id);
                 if (participant == null)
                 {
                     return NotFound(new { Error = $"Participant with id {id} doesn't exist" });
@@ -742,7 +767,7 @@ namespace Parking_System_API.Controllers
         {
             try
             {
-                var participant = await participantRepository.GetParticipantAsyncByID(model.personID, true);
+                var participant = await participantRepository.GetParticipantAsyncByNationalID(model.personID, true);
                 if (participant == null)
                 {
                     return NotFound(new { Error = $"Participant with id {model.personID} doesn't exist" });

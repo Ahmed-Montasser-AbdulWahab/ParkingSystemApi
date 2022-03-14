@@ -6,8 +6,10 @@ namespace Parking_System_API.Data.Entities
 {
     public class Participant
     {
-        [Key, Required]
-        public long ParticipantId { get; set; }
+        [Key]
+        public string Id { get; set; }
+        [Required]
+        public long NationalId { get; set; }
 
         public string Name { get; set; }
 

@@ -50,7 +50,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipant(int ParticipantId, bool getVehicles = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipant(string ParticipantId, bool getVehicles = false, bool getHardwares = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -94,7 +94,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(int ParticipantId, string VehicleId, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(string ParticipantId, string VehicleId, bool getHardwares = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -110,7 +110,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction> GetTransaction(DateTime dateTime, int participantId, string vehicleId, int hardwareId)
+        public async Task<ParkingTransaction> GetTransaction(DateTime dateTime, string participantId, string vehicleId, int hardwareId)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
