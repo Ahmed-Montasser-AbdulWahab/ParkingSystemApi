@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Parking_System_API.Data.DBContext;
 
 namespace Parking_System_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220313151823_grad-migration")]
+    partial class gradmigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,8 +81,8 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
                 {
-                    b.Property<string>("ParticipantId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<long>("ParticipantId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PlateNumberId")
                         .HasColumnType("nvarchar(450)");
@@ -105,8 +107,8 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Participant", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<long>("ParticipantId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("DoDetected")
                         .HasColumnType("bit");
@@ -124,9 +126,6 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("NationalId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -143,12 +142,9 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id");
+                    b.HasKey("ParticipantId");
 
                     b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("NationalId")
                         .IsUnique();
 
                     b.ToTable("Participants");
@@ -229,13 +225,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-<<<<<<< HEAD
                             Password = "OtSxDUApdIK3aA4JhNqoLQtLjK6asGwBqOfeCQpe3As=",
                             Salt = "+G5HN3jMww5YNzV8q4v3bg=="
-=======
-                            Password = "C4gOD/EmnwIFawHclyzZWWS2WKdWxYjkGjv3D/mx+Wg=",
-                            Salt = "/CDKAr7P0xgr22AoMNrajQ=="
->>>>>>> 8b447b38f290cf48e05ad1125d0bc01574e03ac1
                         });
                 });
 
@@ -272,13 +263,13 @@ namespace Parking_System_API.Migrations
 
             modelBuilder.Entity("ParticipantVehicle", b =>
                 {
-                    b.Property<string>("ParticipantsId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<long>("ParticipantsParticipantId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("VehiclesPlateNumberId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ParticipantsId", "VehiclesPlateNumberId");
+                    b.HasKey("ParticipantsParticipantId", "VehiclesPlateNumberId");
 
                     b.HasIndex("VehiclesPlateNumberId");
 
@@ -316,7 +307,7 @@ namespace Parking_System_API.Migrations
                 {
                     b.HasOne("Parking_System_API.Data.Entities.Participant", null)
                         .WithMany()
-                        .HasForeignKey("ParticipantsId")
+                        .HasForeignKey("ParticipantsParticipantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
