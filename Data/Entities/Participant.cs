@@ -11,6 +11,8 @@ namespace Parking_System_API.Data.Entities
         [Required]
         public long NationalId { get; set; }
 
+        public int NumOfVideosUploaded { get; set; }
+
         public string Name { get; set; }
 
         [Required ]

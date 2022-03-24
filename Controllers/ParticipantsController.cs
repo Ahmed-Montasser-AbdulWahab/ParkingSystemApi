@@ -106,7 +106,7 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpPost(), Authorize(Roles = "operator, admin")]
+        [HttpPost()/*, Authorize(Roles = "operator, admin")*/]
         public async Task<ActionResult<ParticipantResponseModel>> AddParticipant([FromBody] ParticipantAdminModel model)
         {
 
@@ -128,7 +128,7 @@ namespace Parking_System_API.Controllers
                     }
                 }
 
-                participant = new Participant() { Id = Guid.NewGuid().ToString() ,Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg" };
+                participant = new Participant() { Id = Guid.NewGuid().ToString() ,Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg",NumOfVideosUploaded =0 };
                 if (model.IsEgyptian)
                 {
                     if (model.NationalId == null || model.NationalId < 2000000000000)
@@ -242,7 +242,7 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPost("{id}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
+        [HttpPost("{id}/uploadProfilePicture")/* Authorize(Roles = "admin,operator")*/]
         public async Task<IActionResult> UploadProfilePicture(string id,[FromForm] UploadPicture upload, bool changePicMode = false)
         {//DAMANA
             try
@@ -253,11 +253,11 @@ namespace Parking_System_API.Controllers
                     return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
                 }
                 var pic = upload.Picture;
-                if (pic.ContentType != "image/jpeg")
-                {
-                    return BadRequest(new { Error = $"Please Upload JPG File." });
-                }
-                var path = $".\\wwwroot\\images\\Participants\\{id}.jpg";
+                //if (pic.ContentType != "image/jpeg")
+                //{
+                //    return BadRequest(new { Error = $"Please Upload JPG File." });
+                //}
+                var path = $".\\wwwroot\\images\\Participants\\{id}.mp4";
 
                 //Connection Lost ??? 
 
@@ -268,9 +268,7 @@ namespace Parking_System_API.Controllers
 
 
                 participant.DoProvidePhoto = true;
-                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{id}.jpg";
-
-                participant.DoDetected = true;
+                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{id}.mp4";
 
                 //Muhammed Samy
                 /*
@@ -288,6 +286,7 @@ namespace Parking_System_API.Controllers
                  * 
                  */
                 string img_path = participant.PhotoUrl;
+                participant.NumOfVideosUploaded++;
                 string result = await FaceDetectionApi.Detect(id, img_path);
                 JObject json = JObject.Parse(result);
                 if (json["preprocessing_response"].ToString() == "1" && json["model_response"].ToString() == "1") 
@@ -315,14 +314,14 @@ namespace Parking_System_API.Controllers
                 if (await participantRepository.SaveChangesAsync())
                 {
                     var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Photo is Created" });
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "classifier is Created" });
                     
                 } else if (changePicMode)
                 {
                     var response_model = mapper.Map<ParticipantResponseModel>(participant);
                     return Ok(new { Message = "Picture was changed Successfully" });
                 }
-                return BadRequest(new { Error = "Try Again adding Photo" });
+                return BadRequest(new { Error = "Try Again adding Video" });
 
             }
             catch (Exception ex)

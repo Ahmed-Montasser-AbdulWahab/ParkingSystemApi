@@ -11,7 +11,7 @@ namespace Parking_System_API.Email
         {
             try
             {
-                DotNetEnv.Env.Load();
+                Env.Load();
                 MailMessage mail = new MailMessage();
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com");
 
