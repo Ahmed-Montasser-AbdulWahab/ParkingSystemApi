@@ -17,8 +17,8 @@ namespace Parking_System_API.Data.Entities
         public bool Result { get; set; } //0: Fail , 1: Succeed
 
 
-        public Participant participant { get; set; }
-        public Vehicle vehicle { get; set; }
-        public Hardware hardware { get; set; }
+        public virtual Participant participant { get; set; }
+        public virtual Vehicle vehicle { get; set; }
+        public virtual Terminal terminal { get; set; }
     }
 }

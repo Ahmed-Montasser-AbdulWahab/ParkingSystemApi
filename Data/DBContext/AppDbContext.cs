@@ -15,7 +15,7 @@ namespace Parking_System_API.Data.DBContext
         public DbSet<SystemUser> SystemUsers { get; set; }
         public DbSet<Participant> Participants { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
-        public DbSet<Hardware> Hardwares { get; set; }
+        public DbSet<Camera> Hardwares { get; set; }
         public DbSet<ParkingTransaction> ParkingTransactions { get; set; }
         public DbSet<Constant> Constants { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -51,7 +51,7 @@ namespace Parking_System_API.Data.DBContext
             mb.Entity<SystemUser>().Property(p => p.IsPowerAccount).HasDefaultValue(false);
 
             mb.Entity<Vehicle>().HasKey(p => new { p.PlateNumberId });
-            mb.Entity<Hardware>().HasKey(p => new { p.HardwareId });
+            mb.Entity<Camera>().HasKey(p => new { p.HardwareId });
             mb.Entity<ParkingTransaction>().HasKey(p => new { p.ParticipantId , p.PlateNumberId, p.HardwareId, p.DateTimeTransaction});
             var salt = HashingClass.GenerateSalt();
             mb.Entity<SystemUser>().HasData(
@@ -70,7 +70,7 @@ namespace Parking_System_API.Data.DBContext
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.NationalId).IsUnique();
             });
-            mb.Entity<Hardware>(entity => {
+            mb.Entity<Camera>(entity => {
                 entity.HasIndex(e => e.ConnectionString).IsUnique();
             });
             mb.Entity<Constant>().HasData(new Constant

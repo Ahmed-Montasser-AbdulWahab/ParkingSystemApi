@@ -106,7 +106,7 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpPost()/*, Authorize(Roles = "operator, admin")*/]
+        [HttpPost(), Authorize(Roles = "operator, admin")]
         public async Task<ActionResult<ParticipantResponseModel>> AddParticipant([FromBody] ParticipantAdminModel model)
         {
 
@@ -242,7 +242,7 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPost("{id}/uploadProfilePicture")/* Authorize(Roles = "admin,operator")*/]
+        [HttpPost("{id}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
         public async Task<IActionResult> UploadProfilePicture(string id,[FromForm] UploadPicture upload, bool changePicMode = false)
         {//DAMANA
             try

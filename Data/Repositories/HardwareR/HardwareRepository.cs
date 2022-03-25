@@ -24,9 +24,9 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             _context.Remove(entity);
         }
 
-        public async Task<Hardware[]> GetAllHardwaresAsync(bool checkParkingTransaction = false)
+        public async Task<Camera[]> GetAllHardwaresAsync(bool checkParkingTransaction = false)
         {
-            IQueryable<Hardware> query = _context.Hardwares;
+            IQueryable<Camera> query = _context.Hardwares;
 
             if (checkParkingTransaction)
             {
@@ -38,9 +38,9 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.ToArrayAsync();
         }
 
-        public async Task<Hardware> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
+        public async Task<Camera> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
         {
-            IQueryable<Hardware> query = _context.Hardwares;
+            IQueryable<Camera> query = _context.Hardwares;
 
             if (checkParkingTransaction)
             {
@@ -52,9 +52,9 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Hardware> GetHardwareAsyncById(int id, bool checkParkingTransaction = false)
+        public async Task<Camera> GetHardwareAsyncById(int id, bool checkParkingTransaction = false)
         {
-            IQueryable<Hardware> query = _context.Hardwares;
+            IQueryable<Camera> query = _context.Hardwares;
 
             if (checkParkingTransaction)
             {
@@ -66,9 +66,9 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Hardware[]> GetHardwaresAsyncByType(string hardwareType, bool checkParkingTransaction = false)
+        public async Task<Camera[]> GetHardwaresAsyncByType(string hardwareType, bool checkParkingTransaction = false)
         {
-            IQueryable<Hardware> query = _context.Hardwares;
+            IQueryable<Camera> query = _context.Hardwares;
 
             if (checkParkingTransaction)
             {

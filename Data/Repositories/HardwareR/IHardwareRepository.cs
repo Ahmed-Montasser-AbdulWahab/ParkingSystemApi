@@ -10,10 +10,10 @@ namespace Parking_System_API.Data.Repositories.HardwareR
         Task<bool> SaveChangesAsync();
 
         // SystemUsers
-        Task<Hardware[]> GetAllHardwaresAsync(bool checkParkingTransaction = false);
-        Task<Hardware> GetHardwareAsyncById(int id, bool checkParkingTransaction = false);
-        Task<Hardware[]> GetHardwaresAsyncByType(string hardwareType, bool checkParkingTransaction = false);
+        Task<Camera[]> GetAllHardwaresAsync(bool checkParkingTransaction = false);
+        Task<Camera> GetHardwareAsyncById(int id, bool checkParkingTransaction = false);
+        Task<Camera[]> GetHardwaresAsyncByType(string hardwareType, bool checkParkingTransaction = false);
 
-        Task<Hardware> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false);
+        Task<Camera> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false);
     }
 }
