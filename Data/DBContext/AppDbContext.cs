@@ -20,6 +20,7 @@ namespace Parking_System_API.Data.DBContext
         public DbSet<Constant> Constants { get; set; }
         public DbSet<Role> Roles { get; set; }
         
+        
 
         protected override void OnModelCreating(ModelBuilder mb)
         {

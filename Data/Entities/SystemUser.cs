@@ -2,7 +2,7 @@
 
 namespace Parking_System_API.Data.Entities
 {
-    public class SystemUser
+    public class SystemUser //Admin operator
     {
         [Required, Key]
         public string Email { get; set; }

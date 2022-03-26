@@ -15,6 +15,8 @@ namespace Parking_System_API.Data.Entities
 
         [Required]
         public bool Service { get; set; }
+
+        public Terminal Terminal { get; set; }
         
 
 

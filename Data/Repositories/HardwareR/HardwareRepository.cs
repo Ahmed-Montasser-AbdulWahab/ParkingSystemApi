@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Parking_System_API.Data.Repositories.HardwareR
 {
-    public class HardwareRepository : IHardwareRepository
+    public class TerminalRepository : ITerminalRepository
     {
         private readonly AppDbContext _context;
 
-        public HardwareRepository(AppDbContext appDbContext)
+        public TerminalRepository(AppDbContext appDbContext)
         {
             this._context = appDbContext;
         }
@@ -24,23 +24,23 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             _context.Remove(entity);
         }
 
-        public async Task<Camera[]> GetAllHardwaresAsync(bool checkParkingTransaction = false)
+        public async Task<Terminal[]> GetAllTerminalsAsync(bool checkParkingTransaction = false)
         {
-            IQueryable<Camera> query = _context.Hardwares;
+            IQueryable<Terminal> query = _context.Terminals;
 
             if (checkParkingTransaction)
             {
                 query = query.Include(c => c.ParkingTransactions);
             }
             // Order It
-            query = query.OrderByDescending(c => c.HardwareId); //Return Password
+            query = query.OrderByDescending(c => c.Id); //Return Password
 
             return await query.ToArrayAsync();
         }
 
-        public async Task<Camera> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
+        public async Task<Terminal> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
         {
-            IQueryable<Camera> query = _context.Hardwares;
+            IQueryable<Terminal> query = _context.Terminals;
 
             if (checkParkingTransaction)
             {
@@ -52,32 +52,31 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Camera> GetHardwareAsyncById(int id, bool checkParkingTransaction = false)
+        public async Task<Terminal> GetHardwareAsyncById(int id, bool checkParkingTransaction = false)
         {
-            IQueryable<Camera> query = _context.Hardwares;
+            IQueryable<Terminal> query = _context.Terminals;
 
             if (checkParkingTransaction)
             {
                 query = query.Include(c => c.ParkingTransactions);
             }
             // Order It
-            query = query.Where(c => c.HardwareId == id); //Return Password
+            query = query.Where(c => c.Id == id); //Return Password
 
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Camera[]> GetHardwaresAsyncByType(string hardwareType, bool checkParkingTransaction = false)
+        public async Task<Terminal[]> GetHardwaresAsyncByType(bool checkParkingTransaction = false)
         {
-            IQueryable<Camera> query = _context.Hardwares;
+            IQueryable<Terminal> query = _context.Terminals;
 
             if (checkParkingTransaction)
             {
                 query = query.Include(c => c.ParkingTransactions);
             }
 
-            query = query.Where(c => c.HardwareType == hardwareType);
             // Order It
-            query = query.OrderByDescending(c => c.HardwareId); //Return Password
+            query = query.OrderByDescending(c => c.Id); //Return Password
 
             return await query.ToArrayAsync();
         }
