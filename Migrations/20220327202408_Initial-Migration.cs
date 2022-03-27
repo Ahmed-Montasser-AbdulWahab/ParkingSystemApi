@@ -131,7 +131,7 @@ namespace Parking_System_API.Migrations
                     CameraType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConnectionString = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Service = table.Column<bool>(type: "bit", nullable: false),
-                    TerminalId = table.Column<int>(type: "int", nullable: false)
+                    TerminalId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -153,7 +153,7 @@ namespace Parking_System_API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Service = table.Column<bool>(type: "bit", nullable: false),
                     State = table.Column<bool>(type: "bit", nullable: false),
-                    TerminalId = table.Column<int>(type: "int", nullable: false)
+                    TerminalId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
