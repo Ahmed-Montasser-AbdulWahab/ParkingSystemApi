@@ -332,8 +332,7 @@ namespace Parking_System_API.Controllers
 
                 }
 
-                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now}.jpg";
-
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{HashingClass.GenerateSalt()}.jpg";
                 //Connection Lost ??? 
 
                 using (var stream = new FileStream(path, FileMode.Create))
@@ -394,7 +393,7 @@ namespace Parking_System_API.Controllers
                     
                 }
 
-                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now}.jpg";
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{HashingClass.GenerateSalt()}.jpg";
 
                 //Connection Lost ??? 
 
@@ -805,6 +804,7 @@ namespace Parking_System_API.Controllers
         {
             try
             {
+                //facemodel
                 var participant = await participantRepository.GetParticipantAsyncByNationalID(model.personID, true);
                 if (participant == null)
                 {

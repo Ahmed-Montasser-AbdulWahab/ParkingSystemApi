@@ -12,7 +12,7 @@ namespace Parking_System_API.Data.Repositories.HardwareR
         // SystemUsers
         Task<Terminal[]> GetAllTerminalsAsync(bool checkParkingTransaction = false);
         Task<Terminal> GetTerminalAsyncById(int id, bool checkParkingTransaction = false);
-        Task<Terminal[]> GetTerminalsAsyncByType(bool checkParkingTransaction = false);
+        
 
         Task<Terminal> GetTerminalAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false);
     }

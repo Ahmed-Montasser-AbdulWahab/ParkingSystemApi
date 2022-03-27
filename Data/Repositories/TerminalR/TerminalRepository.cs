@@ -66,20 +66,6 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Terminal[]> GetTerminalsAsyncByType(bool checkParkingTransaction = false)
-        {
-            IQueryable<Terminal> query = _context.Terminals;
-
-            if (checkParkingTransaction)
-            {
-                query = query.Include(c => c.ParkingTransactions);
-            }
-
-            // Order It
-            query = query.OrderByDescending(c => c.Id); //Return Password
-
-            return await query.ToArrayAsync();
-        }
 
         public async Task<bool> SaveChangesAsync()
         {
