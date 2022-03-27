@@ -42,7 +42,7 @@ namespace Parking_System_API
             services.AddCors();
             services.AddControllers();
             services.AddScoped<ISystemUserRepository, SystemUserRepository>();
-            services.AddScoped<IHardwareRepository, HardwareRepository>();
+            services.AddScoped<ITerminalRepository, TerminalRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IParticipantRepository, ParticipantRepository>();
             services.AddScoped<IParkingTransactionRepository, ParkingTransactionRepository>();

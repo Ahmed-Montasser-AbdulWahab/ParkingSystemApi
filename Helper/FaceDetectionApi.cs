@@ -12,7 +12,7 @@ namespace Parking_System_API.Helper
 {
     public class FaceDetectionApi
     {
-        public static async Task<string> Detect(string id, string picture)
+        public static string Detect(string id, string picture)
         {
             var url = $"http://localhost:8001/face_saving?Id={id}";
             WebClient client = new WebClient();

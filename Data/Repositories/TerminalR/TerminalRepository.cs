@@ -38,7 +38,7 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.ToArrayAsync();
         }
 
-        public async Task<Terminal> GetHardwareAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
+        public async Task<Terminal> GetTerminalAsyncByConnectionString(string ConnectionString, bool checkParkingTransaction = false)
         {
             IQueryable<Terminal> query = _context.Terminals;
 
@@ -52,7 +52,7 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Terminal> GetHardwareAsyncById(int id, bool checkParkingTransaction = false)
+        public async Task<Terminal> GetTerminalAsyncById(int id, bool checkParkingTransaction = false)
         {
             IQueryable<Terminal> query = _context.Terminals;
 
@@ -66,7 +66,7 @@ namespace Parking_System_API.Data.Repositories.HardwareR
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Terminal[]> GetHardwaresAsyncByType(bool checkParkingTransaction = false)
+        public async Task<Terminal[]> GetTerminalsAsyncByType(bool checkParkingTransaction = false)
         {
             IQueryable<Terminal> query = _context.Terminals;
 

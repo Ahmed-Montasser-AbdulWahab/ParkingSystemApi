@@ -10,8 +10,8 @@ namespace Parking_System_API.Data.Entities
         public string Id { get; set; }
         [Required]
         public long NationalId { get; set; }
-
-        public int NumOfVideosUploaded { get; set; }
+        [Required]
+        public string LastUpdated { get; set; }
 
         public string Name { get; set; }
 
@@ -28,6 +28,8 @@ namespace Parking_System_API.Data.Entities
 
         [Required]
         public bool DoProvidePhoto { get; set; }
+        [Required]
+        public bool DoProvideVideo { get; set; }
         [Required]
         public bool DoDetected { get; set; }
         [Required]

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Parking_System_API.Migrations
 {
-    public partial class InitialDb : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -23,27 +23,12 @@ namespace Parking_System_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Hardwares",
-                columns: table => new
-                {
-                    HardwareId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HardwareType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ConnectionString = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Service = table.Column<bool>(type: "bit", nullable: false),
-                    Direction = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Hardwares", x => x.HardwareId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Participants",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NationalId = table.Column<long>(type: "bigint", nullable: false),
+                    LastUpdated = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -51,6 +36,7 @@ namespace Parking_System_API.Migrations
                     PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: ".\\wwwroot\\images\\Anonymous.jpg"),
                     DoProvideFullData = table.Column<bool>(type: "bit", nullable: false),
                     DoProvidePhoto = table.Column<bool>(type: "bit", nullable: false),
+                    DoProvideVideo = table.Column<bool>(type: "bit", nullable: false),
                     DoDetected = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -90,6 +76,35 @@ namespace Parking_System_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tariffs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CostUnit = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tariffs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Terminals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConnectionString = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Service = table.Column<bool>(type: "bit", nullable: false),
+                    Direction = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Terminals", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Vehicles",
                 columns: table => new
                 {
@@ -108,36 +123,84 @@ namespace Parking_System_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Camera",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CameraType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConnectionString = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Service = table.Column<bool>(type: "bit", nullable: false),
+                    TerminalId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Camera", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Camera_Terminals_TerminalId",
+                        column: x => x.TerminalId,
+                        principalTable: "Terminals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull,
+                        onUpdate: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Gates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Service = table.Column<bool>(type: "bit", nullable: false),
+                    State = table.Column<bool>(type: "bit", nullable: false),
+                    TerminalId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Gates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Gates_Terminals_TerminalId",
+                        column: x => x.TerminalId,
+                        principalTable: "Terminals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull,
+                        onUpdate: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ParkingTransactions",
                 columns: table => new
                 {
                     ParticipantId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PlateNumberId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    HardwareId = table.Column<int>(type: "int", nullable: false),
+                    TerminalId = table.Column<int>(type: "int", nullable: false),
                     DateTimeTransaction = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Result = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ParkingTransactions", x => new { x.ParticipantId, x.PlateNumberId, x.HardwareId, x.DateTimeTransaction });
-                    table.ForeignKey(
-                        name: "FK_ParkingTransactions_Hardwares_HardwareId",
-                        column: x => x.HardwareId,
-                        principalTable: "Hardwares",
-                        principalColumn: "HardwareId",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_ParkingTransactions", x => new { x.ParticipantId, x.PlateNumberId, x.TerminalId, x.DateTimeTransaction });
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Participants_ParticipantId",
                         column: x => x.ParticipantId,
                         principalTable: "Participants",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction,
+                        onUpdate: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ParkingTransactions_Terminals_TerminalId",
+                        column: x => x.TerminalId,
+                        principalTable: "Terminals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction,
+                        onUpdate: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ParkingTransactions_Vehicles_PlateNumberId",
                         column: x => x.PlateNumberId,
                         principalTable: "Vehicles",
                         principalColumn: "PlateNumberId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction,
+                        onUpdate: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -155,13 +218,15 @@ namespace Parking_System_API.Migrations
                         column: x => x.ParticipantsId,
                         principalTable: "Participants",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade,
+                        onUpdate: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Participant_Vehicle_Vehicles_VehiclesPlateNumberId",
                         column: x => x.VehiclesPlateNumberId,
                         principalTable: "Vehicles",
                         principalColumn: "PlateNumberId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade,
+                        onUpdate: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
@@ -182,24 +247,34 @@ namespace Parking_System_API.Migrations
             migrationBuilder.InsertData(
                 table: "SystemUsers",
                 columns: new[] { "Email", "IsAdmin", "IsPowerAccount", "Name", "Password", "Salt" },
-                values: new object[] { "admin@admin.com", true, true, "Power Admin", "C4gOD/EmnwIFawHclyzZWWS2WKdWxYjkGjv3D/mx+Wg=", "/CDKAr7P0xgr22AoMNrajQ==" });
+                values: new object[] { "admin@admin.com", true, true, "Power Admin", "N7a/Hbg00ukvQ0lS/BkQOMJHQEwtylYtq2NN93E5IDY=", "+Hi6wzbR4Et4uPl4X1/1BQ==" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Hardwares_ConnectionString",
-                table: "Hardwares",
+                name: "IX_Camera_ConnectionString",
+                table: "Camera",
                 column: "ConnectionString",
                 unique: true,
                 filter: "[ConnectionString] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParkingTransactions_HardwareId",
-                table: "ParkingTransactions",
-                column: "HardwareId");
+                name: "IX_Camera_TerminalId",
+                table: "Camera",
+                column: "TerminalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Gates_TerminalId",
+                table: "Gates",
+                column: "TerminalId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ParkingTransactions_PlateNumberId",
                 table: "ParkingTransactions",
                 column: "PlateNumberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ParkingTransactions_TerminalId",
+                table: "ParkingTransactions",
+                column: "TerminalId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Participant_Vehicle_VehiclesPlateNumberId",
@@ -217,12 +292,25 @@ namespace Parking_System_API.Migrations
                 table: "Participants",
                 column: "NationalId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Terminals_ConnectionString",
+                table: "Terminals",
+                column: "ConnectionString",
+                unique: true,
+                filter: "[ConnectionString] IS NOT NULL");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Camera");
+
+            migrationBuilder.DropTable(
                 name: "Constants");
+
+            migrationBuilder.DropTable(
+                name: "Gates");
 
             migrationBuilder.DropTable(
                 name: "ParkingTransactions");
@@ -237,7 +325,10 @@ namespace Parking_System_API.Migrations
                 name: "SystemUsers");
 
             migrationBuilder.DropTable(
-                name: "Hardwares");
+                name: "Tariffs");
+
+            migrationBuilder.DropTable(
+                name: "Terminals");
 
             migrationBuilder.DropTable(
                 name: "Participants");

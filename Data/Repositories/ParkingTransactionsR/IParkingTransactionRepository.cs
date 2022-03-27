@@ -11,12 +11,12 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
         Task<bool> SaveChangesAsync();
 
         // SystemUsers
-        Task<ParkingTransaction[]> GetAllTransactions(bool getVehicles = false, bool getParticipants = false, bool getHardwares = false);
-        Task<ParkingTransaction[]> GetAllTransactionsForParticipant(string ParticipantId, bool getVehicles = false, bool getHardwares = false);
-        Task<ParkingTransaction[]> GetAllTransactionsForVehicle(string VehicleId, bool getParticipants = false, bool getHardwares = false);
-        Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(string ParticipantId, string VehicleId, bool getHardwares = false);
-        Task<ParkingTransaction> GetTransaction(DateTime dateTime, string participantId, string vehicleId, int hardwareId);
-        Task<ParkingTransaction[]> GetTransactionsByDateTime(DateTime dateTime, bool getVehicles = false, bool getParticipants = false, bool getHardwares = false);
-        Task<ParkingTransaction[]> GetTransactionsByDateTimeRange(DateTime StartdateTime, DateTime EnddateTime, bool getVehicles = false, bool getParticipants = false, bool getHardwares = false);
+        Task<ParkingTransaction[]> GetAllTransactions(bool getVehicles = false, bool getParticipants = false, bool getTerminals = false);
+        Task<ParkingTransaction[]> GetAllTransactionsForParticipant(string ParticipantId, bool getVehicles = false, bool getTerminals = false);
+        Task<ParkingTransaction[]> GetAllTransactionsForVehicle(string VehicleId, bool getParticipants = false, bool getTerminals = false);
+        Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(string ParticipantId, string VehicleId, bool getTerminals = false);
+        Task<ParkingTransaction> GetTransaction(DateTime dateTime, string participantId, string vehicleId, int TerminalId);
+        Task<ParkingTransaction[]> GetTransactionsByDateTime(DateTime dateTime, bool getVehicles = false, bool getParticipants = false, bool getTerminals = false);
+        Task<ParkingTransaction[]> GetTransactionsByDateTimeRange(DateTime StartdateTime, DateTime EnddateTime, bool getVehicles = false, bool getParticipants = false, bool getTerminals = false);
     }
 }

@@ -40,7 +40,6 @@ namespace Parking_System.Classes
         #region FaceRecognition
         public int LoadModel()
         {
-            int model_flag = 1;
             Process.Start("cmd.exe", "/C face_recognition.py model_flag");
 
             return 1;
@@ -48,7 +47,7 @@ namespace Parking_System.Classes
         public int Recognize()
         {
             //parameters needed for face recogmition
-            int model_flag = 1;
+   
 
             Process.Start("cmd.exe", "/C C:\\Users\\ahmed\\Documents\\Visual Studio 2022\\Projects\\Parking System\\Aez\\face_recognition.py model_flag");
             //Invoke the face_recognition code to run and return the User ID if recognized or else return -1

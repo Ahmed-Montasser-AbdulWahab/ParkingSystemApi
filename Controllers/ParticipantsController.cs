@@ -128,7 +128,7 @@ namespace Parking_System_API.Controllers
                     }
                 }
 
-                participant = new Participant() { Id = Guid.NewGuid().ToString() ,Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg",NumOfVideosUploaded =0 };
+                participant = new Participant() { Id = Guid.NewGuid().ToString() ,Status = false, DoProvideFullData = true, DoProvidePhoto = false, DoProvideVideo = false, DoDetected = false, PhotoUrl = ".\\wwwroot\\images\\Anonymous.jpg" };
                 if (model.IsEgyptian)
                 {
                     if (model.NationalId == null || model.NationalId < 2000000000000)
@@ -221,7 +221,7 @@ namespace Parking_System_API.Controllers
                         }
                     }
                 }
-
+                participant.LastUpdated = DateTime.Now.ToString();
                 //adding and saving
                 participantRepository.Add(participant);
                 if (!await participantRepository.SaveChangesAsync())
@@ -242,8 +242,8 @@ namespace Parking_System_API.Controllers
 
         }
 
-        [HttpPost("{id}/uploadProfilePicture"), Authorize(Roles = "admin,operator")]
-        public async Task<IActionResult> UploadProfilePicture(string id,[FromForm] UploadPicture upload, bool changePicMode = false)
+        [HttpPost("{id}/uploadVideo"), Authorize(Roles = "admin,operator")] //FaceRecognition Model
+        public async Task<IActionResult> UploadVideo(string id,[FromForm] UploadMedia upload)
         {//DAMANA
             try
             {
@@ -252,42 +252,25 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
                 }
-                var pic = upload.Picture;
-                //if (pic.ContentType != "image/jpeg")
-                //{
-                //    return BadRequest(new { Error = $"Please Upload JPG File." });
-                //}
-                var path = $".\\wwwroot\\images\\Participants\\{id}.mp4";
+                var med = upload.Media;
+                if (med.ContentType != "video/mp4")
+                {
+                    return BadRequest(new { Error = $"Please Upload MP4 File." });
+                }
+                var path = $".\\wwwroot\\videos\\Participants\\{id}_{DateTime.Now}.mp4";
 
                 //Connection Lost ??? 
 
                 using (var stream = new FileStream(path, FileMode.Create))
                 {
-                    await pic.CopyToAsync(stream);
+                    await med.CopyToAsync(stream);
                 }
 
 
-                participant.DoProvidePhoto = true;
-                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{id}.mp4";
-
-                //Muhammed Samy
-                /*
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 */
-                string img_path = participant.PhotoUrl;
-                participant.NumOfVideosUploaded++;
-                string result = await FaceDetectionApi.Detect(id, img_path);
+                participant.DoProvideVideo = true;
+                
+                
+                string result = FaceDetectionApi.Detect(id, path);
                 JObject json = JObject.Parse(result);
                 if (json["preprocessing_response"].ToString() == "1" && json["model_response"].ToString() == "1") 
                 {
@@ -298,9 +281,9 @@ namespace Parking_System_API.Controllers
                     participant.DoDetected = false;
                 }
                     //response  if succeeded => (result.preprocessing_response && result.model_response)
-                    Console.WriteLine(result);
+                    //Console.WriteLine(result);
 
-                if (participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoDetected)
+                if (participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoProvideVideo && participant.DoDetected)
                 {
                     participant.Status = true;
                 }
@@ -308,18 +291,13 @@ namespace Parking_System_API.Controllers
                 {
                     participant.Status = false;
                 }
-
-
+                participant.LastUpdated = DateTime.Now.ToString();
                 //5atar
                 if (await participantRepository.SaveChangesAsync())
                 {
                     var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "classifier is Created" });
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Classifier is Created" });
                     
-                } else if (changePicMode)
-                {
-                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Ok(new { Message = "Picture was changed Successfully" });
                 }
                 return BadRequest(new { Error = "Try Again adding Video" });
 
@@ -332,7 +310,7 @@ namespace Parking_System_API.Controllers
 
 
         [HttpPost("uploadMyProfilePicture"), Authorize(Roles = "participant")]
-        public async Task<IActionResult> UploadProfilePictureForMe([FromForm] UploadPicture upload, bool changePicMode = false)
+        public async Task<IActionResult> UploadProfilePictureForMe([FromForm] UploadMedia upload)
         {//DAMANA
             try
             {
@@ -342,12 +320,19 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
                 }
-                var pic = upload.Picture;
+                var pic = upload.Media;
                 if (pic.ContentType != "image/jpeg")
                 {
                     return BadRequest(new { Error = $"Please Upload JPG File." });
                 }
-                var path = $".\\wwwroot\\images\\Participants\\{id}.jpg";
+                if (participant.PhotoUrl != ".\\wwwroot\\images\\Anonymous.jpg")
+                {
+                    // If file found, delete it    
+                    System.IO.File.Delete(participant.PhotoUrl);
+
+                }
+
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now}.jpg";
 
                 //Connection Lost ??? 
 
@@ -358,28 +343,11 @@ namespace Parking_System_API.Controllers
 
 
                 participant.DoProvidePhoto = true;
-                participant.PhotoUrl = $".\\wwwroot\\images\\Participants\\{id}.jpg";
-
-                participant.DoDetected = true;
-                //Muhammed Samy
-                /*
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 * 
-                 */
-                //   string result = await FaceDetectionApi.Detect(upload.Id, upload.pic);
+                participant.PhotoUrl = path;
 
 
-                if (participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoDetected)
+
+                if (participant.DoProvideFullData && participant.DoProvidePhoto &&participant.DoProvideVideo && participant.DoDetected)
                 {
                     participant.Status = true;
                 }
@@ -394,11 +362,7 @@ namespace Parking_System_API.Controllers
                     return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Photo is Created" });
 
                 }
-                else if (changePicMode)
-                {
-                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
-                    return Ok(new { Message = "Picture was changed Successfully" });
-                }
+                
                 return BadRequest(new { Error = "Try Again adding Photo" });
             }
             catch (Exception ex)
@@ -406,6 +370,69 @@ namespace Parking_System_API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
             }
         }
+
+        [HttpPost("{id}/uploadProfilePicture"), Authorize(Roles = "admin, operator")]
+        public async Task<IActionResult> UploadProfilePicture(string id, [FromForm] UploadMedia upload)
+        {//DAMANA
+            try
+            {
+                var participant = await participantRepository.GetParticipantAsyncByID(id);
+                if (participant is null)
+                {
+                    return BadRequest(new { Error = $"Participant of Id {id} doesn't Exist." });
+                }
+                var pic = upload.Media;
+                if (pic.ContentType != "image/jpeg")
+                {
+                    return BadRequest(new { Error = $"Please Upload JPG File." });
+                }
+
+                if (participant.PhotoUrl != ".\\wwwroot\\images\\Anonymous.jpg")
+                {
+                    // If file found, delete it    
+                    System.IO.File.Delete(participant.PhotoUrl);
+                    
+                }
+
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now}.jpg";
+
+                //Connection Lost ??? 
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await pic.CopyToAsync(stream);
+                }
+
+
+                participant.DoProvidePhoto = true;
+                participant.PhotoUrl = path;
+
+
+
+                if (participant.DoProvideFullData && participant.DoProvidePhoto && participant.DoProvideVideo && participant.DoDetected)
+                {
+                    participant.Status = true;
+                }
+                else
+                {
+                    participant.Status = false;
+                }
+
+                if (await participantRepository.SaveChangesAsync())
+                {
+                    var response_model = mapper.Map<ParticipantResponseModel>(participant);
+                    return Created(linkGenerator.GetPathByAction("GetParticipant", "Participants", new { id = participant.Id }), new { Participant = response_model, Message = "Photo is Created" });
+
+                }
+
+                return BadRequest(new { Error = "Try Again adding Photo" });
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+            }
+        }
+
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordModel model)
         {

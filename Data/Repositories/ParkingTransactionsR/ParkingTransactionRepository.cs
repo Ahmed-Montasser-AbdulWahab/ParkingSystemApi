@@ -25,7 +25,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             _context.Remove(entity);
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactions(bool getVehicles = false, bool getParticipants = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactions(bool getVehicles = false, bool getParticipants = false, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -40,9 +40,9 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
                 query = query.Include(c => c.participant);
             }
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
             // Order It
             query = query.OrderByDescending(c => c.DateTimeTransaction);
@@ -50,7 +50,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipant(string ParticipantId, bool getVehicles = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipant(string ParticipantId, bool getVehicles = false, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -61,9 +61,9 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             }
 
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
 
             // Order It
@@ -72,7 +72,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactionsForVehicle(string VehicleId, bool getParticipants = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactionsForVehicle(string VehicleId, bool getParticipants = false, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -83,9 +83,9 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             }
 
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
 
             // Order It
@@ -94,14 +94,14 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(string ParticipantId, string VehicleId, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetAllTransactionsForParticipantAndVehicle(string ParticipantId, string VehicleId, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
 
             // Order It
@@ -110,17 +110,17 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction> GetTransaction(DateTime dateTime, string participantId, string vehicleId, int hardwareId)
+        public async Task<ParkingTransaction> GetTransaction(DateTime dateTime, string participantId, string vehicleId, int terminalId)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
             // Order It
-            query = query.Where(c => c.ParticipantId == participantId && c.PlateNumberId == vehicleId && c.HardwareId == hardwareId && c.DateTimeTransaction==dateTime);
+            query = query.Where(c => c.ParticipantId == participantId && c.PlateNumberId == vehicleId && c.TerminalId == terminalId && c.DateTimeTransaction==dateTime);
 
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetTransactionsByDateTime(DateTime dateTime, bool getVehicles = false, bool getParticipants = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetTransactionsByDateTime(DateTime dateTime, bool getVehicles = false, bool getParticipants = false, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -135,9 +135,9 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
                 query = query.Include(c => c.participant);
             }
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
             query = query.Where(c => c.DateTimeTransaction == dateTime);
             // Order It
@@ -146,7 +146,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
             return await query.ToArrayAsync();
         }
 
-        public async Task<ParkingTransaction[]> GetTransactionsByDateTimeRange(DateTime StartdateTime, DateTime EnddateTime, bool getVehicles = false, bool getParticipants = false, bool getHardwares = false)
+        public async Task<ParkingTransaction[]> GetTransactionsByDateTimeRange(DateTime StartdateTime, DateTime EnddateTime, bool getVehicles = false, bool getParticipants = false, bool getTerminals = false)
         {
             IQueryable<ParkingTransaction> query = _context.ParkingTransactions;
 
@@ -161,9 +161,9 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
                 query = query.Include(c => c.participant);
             }
 
-            if (getHardwares)
+            if (getTerminals)
             {
-                query = query.Include(c => c.hardware);
+                query = query.Include(c => c.terminal);
             }
             query = query.Where(c => c.DateTimeTransaction <= EnddateTime && c.DateTimeTransaction >= StartdateTime );
             // Order It

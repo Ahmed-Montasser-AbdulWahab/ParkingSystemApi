@@ -19,6 +19,37 @@ namespace Parking_System_API.Migrations
                 .HasAnnotation("ProductVersion", "5.0.14")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Camera", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CameraType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConnectionString")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Service")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TerminalId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionString")
+                        .IsUnique()
+                        .HasFilter("[ConnectionString] IS NOT NULL");
+
+                    b.HasIndex("TerminalId");
+
+                    b.ToTable("Camera");
+                });
+
             modelBuilder.Entity("Parking_System_API.Data.Entities.Constant", b =>
                 {
                     b.Property<int>("ID")
@@ -48,33 +79,27 @@ namespace Parking_System_API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Parking_System_API.Data.Entities.Hardware", b =>
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Gate", b =>
                 {
-                    b.Property<int>("HardwareId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ConnectionString")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("Direction")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("HardwareType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("Service")
                         .HasColumnType("bit");
 
-                    b.HasKey("HardwareId");
+                    b.Property<bool>("State")
+                        .HasColumnType("bit");
 
-                    b.HasIndex("ConnectionString")
-                        .IsUnique()
-                        .HasFilter("[ConnectionString] IS NOT NULL");
+                    b.Property<int>("TerminalId")
+                        .HasColumnType("int");
 
-                    b.ToTable("Hardwares");
+                    b.HasKey("Id");
+
+                    b.HasIndex("TerminalId");
+
+                    b.ToTable("Gates");
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
@@ -85,7 +110,7 @@ namespace Parking_System_API.Migrations
                     b.Property<string>("PlateNumberId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("HardwareId")
+                    b.Property<int>("TerminalId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateTimeTransaction")
@@ -94,11 +119,11 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("Result")
                         .HasColumnType("bit");
 
-                    b.HasKey("ParticipantId", "PlateNumberId", "HardwareId", "DateTimeTransaction");
-
-                    b.HasIndex("HardwareId");
+                    b.HasKey("ParticipantId", "PlateNumberId", "TerminalId", "DateTimeTransaction");
 
                     b.HasIndex("PlateNumberId");
+
+                    b.HasIndex("TerminalId");
 
                     b.ToTable("ParkingTransactions");
                 });
@@ -117,18 +142,22 @@ namespace Parking_System_API.Migrations
                     b.Property<bool>("DoProvidePhoto")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("DoProvideVideo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LastUpdated")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("NationalId")
                         .HasColumnType("bigint");
-
-                    b.Property<int>("NumOfVideosUploaded")
-                        .HasColumnType("int");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -232,9 +261,53 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "FsGolxiHcfTR7jltvqxf5ZE2fIej8XcxD99q5AAaIFk=",
-                            Salt = "gNzaHGt/NaHFeJl5kU00/Q=="
+                            Password = "N7a/Hbg00ukvQ0lS/BkQOMJHQEwtylYtq2NN93E5IDY=",
+                            Salt = "+Hi6wzbR4Et4uPl4X1/1BQ=="
                         });
+                });
+
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Tariff", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double>("CostUnit")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tariffs");
+                });
+
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Terminal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ConnectionString")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Direction")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Service")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionString")
+                        .IsUnique()
+                        .HasFilter("[ConnectionString] IS NOT NULL");
+
+                    b.ToTable("Terminals");
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Vehicle", b =>
@@ -283,14 +356,30 @@ namespace Parking_System_API.Migrations
                     b.ToTable("Participant_Vehicle");
                 });
 
-            modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Camera", b =>
                 {
-                    b.HasOne("Parking_System_API.Data.Entities.Hardware", "hardware")
-                        .WithMany("ParkingTransactions")
-                        .HasForeignKey("HardwareId")
+                    b.HasOne("Parking_System_API.Data.Entities.Terminal", "Terminal")
+                        .WithMany()
+                        .HasForeignKey("TerminalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Terminal");
+                });
+
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Gate", b =>
+                {
+                    b.HasOne("Parking_System_API.Data.Entities.Terminal", "Terminal")
+                        .WithMany()
+                        .HasForeignKey("TerminalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Terminal");
+                });
+
+            modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
+                {
                     b.HasOne("Parking_System_API.Data.Entities.Participant", "participant")
                         .WithMany("ParkingTransactions")
                         .HasForeignKey("ParticipantId")
@@ -303,9 +392,15 @@ namespace Parking_System_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("hardware");
+                    b.HasOne("Parking_System_API.Data.Entities.Terminal", "terminal")
+                        .WithMany("ParkingTransactions")
+                        .HasForeignKey("TerminalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("participant");
+
+                    b.Navigation("terminal");
 
                     b.Navigation("vehicle");
                 });
@@ -325,12 +420,12 @@ namespace Parking_System_API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Parking_System_API.Data.Entities.Hardware", b =>
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Participant", b =>
                 {
                     b.Navigation("ParkingTransactions");
                 });
 
-            modelBuilder.Entity("Parking_System_API.Data.Entities.Participant", b =>
+            modelBuilder.Entity("Parking_System_API.Data.Entities.Terminal", b =>
                 {
                     b.Navigation("ParkingTransactions");
                 });

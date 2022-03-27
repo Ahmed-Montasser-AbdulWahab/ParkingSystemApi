@@ -20,6 +20,11 @@ namespace Parking_System_API.Data.DBContext
         public DbSet<Constant> Constants { get; set; }
         public DbSet<Role> Roles { get; set; }
         
+        public DbSet<Camera> Cameras { get; set; }
+        public DbSet<Terminal> Terminals { get; set; }
+        public DbSet<Tariff> Tariffs   { get; set; }
+        public DbSet<Gate> Gates { get; set; }
+
         
 
         protected override void OnModelCreating(ModelBuilder mb)
@@ -52,8 +57,8 @@ namespace Parking_System_API.Data.DBContext
             mb.Entity<SystemUser>().Property(p => p.IsPowerAccount).HasDefaultValue(false);
 
             mb.Entity<Vehicle>().HasKey(p => new { p.PlateNumberId });
-            mb.Entity<Camera>().HasKey(p => new { p.HardwareId });
-            mb.Entity<ParkingTransaction>().HasKey(p => new { p.ParticipantId , p.PlateNumberId, p.HardwareId, p.DateTimeTransaction});
+            mb.Entity<Terminal>().HasKey(p => new { p.Id });
+            mb.Entity<ParkingTransaction>().HasKey(p => new { p.ParticipantId , p.PlateNumberId, p.TerminalId, p.DateTimeTransaction});
             var salt = HashingClass.GenerateSalt();
             mb.Entity<SystemUser>().HasData(
                 new SystemUser {
@@ -74,6 +79,9 @@ namespace Parking_System_API.Data.DBContext
             mb.Entity<Camera>(entity => {
                 entity.HasIndex(e => e.ConnectionString).IsUnique();
             });
+            mb.Entity<Terminal>(entity => {
+                entity.HasIndex(e => e.ConnectionString).IsUnique();
+            });
             mb.Entity<Constant>().HasData(new Constant
             {
                 ID = 1,
@@ -82,7 +90,9 @@ namespace Parking_System_API.Data.DBContext
 
             });
             mb.Entity<Vehicle>().Property(c => c.PlateNumberId).ValueGeneratedNever();
-
+            mb.Entity<Terminal>().Property(c => c.Id).ValueGeneratedOnAdd();
+            mb.Entity<Camera>().Property(c => c.Id).ValueGeneratedOnAdd();
+            mb.Entity<Gate>().Property(c => c.Id).ValueGeneratedOnAdd();
         }
 
         //    mb.Entity<SystemUser>()

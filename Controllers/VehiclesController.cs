@@ -121,5 +121,28 @@ namespace Parking_System_API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
             }
         }
+
+
+        [HttpGet, Authorize(Roles = "admin, operator")]
+        public async Task<ActionResult<VehicleResponseModel[]>> GetVehicles()
+        {
+            try
+            {
+
+                var vehicle = await vehicleRepository.GetAllVehicles();
+                if (vehicle.Length == 0)
+                {
+                    return NotFound($"No Vehicles Found");
+                }
+
+                var model = mapper.Map<VehicleResponseModel[]>(vehicle);
+
+                return model;
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Error {ex}");
+            }
+        }
     }
 }

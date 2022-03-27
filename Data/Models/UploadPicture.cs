@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Parking_System_API.Data.Models
 {
-    public class UploadPicture
+    public class UploadMedia
     {
 
         [Required]
-        public IFormFile Picture { get; set; }
+        public IFormFile Media { get; set; }
     }
 }

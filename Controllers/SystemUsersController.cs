@@ -81,7 +81,7 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = "Try Again" });
                 }
-                if (!await roleRepository.RoleExistsAsync(systemUserModel.Role))
+                if (!await roleRepository.RoleExistsAsync(systemUserModel.Role.ToLower()))
                 {
                     return BadRequest(new { Error = $"({systemUserModel.Role}) role doesnot exist" });
                 }
@@ -140,7 +140,7 @@ namespace Parking_System_API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
             }
         }
-        [HttpGet("me"), Authorize(Roles = "admin")]
+        [HttpGet("me"), Authorize(Roles = "admin, operator")]
         public async Task<ActionResult<SystemUserResponseModel>> GetMe()
         {
             try
@@ -161,7 +161,7 @@ namespace Parking_System_API.Controllers
             }
         }
 
-        [HttpGet("SystemUser/{email?}"), Authorize(Roles = "admin")]
+        [HttpGet("SystemUser/{email?}"), Authorize(Roles = "admin")]//Write this in Post Man
         public async Task<ActionResult<SystemUserResponseModel>> GetSystemUser(string email)
         {
             try
