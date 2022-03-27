@@ -11,6 +11,7 @@ namespace Parking_System_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CarEntering()
         {
+            return Ok("");
             //Car Press Presence Sensor
             //gate is closed
             //Plate Recognition Api Calling
@@ -41,6 +42,7 @@ namespace Parking_System_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CarExiting()
         {
+            return Ok("");
             //Car Press Presence Sensor
             //gate is closed
             //Plate Recognition Api Calling
@@ -71,10 +73,11 @@ namespace Parking_System_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CarDeparture()
         {
+            return Ok("");
             //Car leaves Presence Sensor
             //delay 2 seconds
             //gate is closed
-            
+
 
         }
     }
