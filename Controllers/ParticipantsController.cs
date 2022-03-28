@@ -589,7 +589,7 @@ namespace Parking_System_API.Controllers
                     participant.DoProvidePhoto = true;
                 }
 
-                if (participant.DoProvidePhoto && participant.DoProvideFullData)
+                if (participant.DoProvidePhoto && participant.DoProvideFullData && participant.DoDetected && participant.DoProvideVideo)
                 {
                     participant.Status = true;
                 }
@@ -697,7 +697,7 @@ namespace Parking_System_API.Controllers
                     participant.DoProvidePhoto = true;
                 }
 
-                if (participant.DoProvidePhoto && participant.DoProvideFullData)
+                if (participant.DoProvidePhoto && participant.DoProvideFullData && participant.DoProvideVideo && participant.DoDetected)
                 {
                     participant.Status = true;
                 }

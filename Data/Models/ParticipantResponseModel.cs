@@ -13,6 +13,7 @@
         public bool DoProvidePhoto { get; set; }
         
         public string PhotoUrl { get; set; }
+        public bool DoProvideVideo { get; set; }
         public bool DoDetected { get; set; }
 
         public bool Status
