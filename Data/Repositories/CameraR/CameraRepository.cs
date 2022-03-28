@@ -29,7 +29,7 @@ namespace Parking_System_API.Data.Repositories.CameraR
             IQueryable<Camera> query = _context.Cameras;
             if (includeTerminal)
             {
-                query = query.Include(c => c.TerminalId);
+                query = query.Include(c => c.Terminal);
             }
             query = query.OrderBy(c => c.Id); 
 
@@ -56,7 +56,7 @@ namespace Parking_System_API.Data.Repositories.CameraR
 
             if (includeTerminal)
             {
-                query = query.Include(c => c.TerminalId);
+                query = query.Include(c => c.Terminal);
             }
             // Order It
             query = query.Where(c => c.Id == Id); 
