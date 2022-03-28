@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\Participants\" />
+    <Folder Include="wwwroot\videos\Participants\" />
   </ItemGroup>
 
 </Project>

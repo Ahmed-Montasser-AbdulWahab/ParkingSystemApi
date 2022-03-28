@@ -517,7 +517,7 @@ namespace Parking_System_API.Controllers
                     return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
                 }
 
-                if (model.IsEgyptian)
+                if (model.IsEgyptian is not null && model.IsEgyptian.Value)
                 {
                     if (model.NationalId == null || model.NationalId < 2000000000000)
                     {
@@ -626,7 +626,7 @@ namespace Parking_System_API.Controllers
                     return NotFound(new { Error = $"Participant with ID {id} doesn't exist" });
                 }
 
-                if (model.IsEgyptian)
+                if (model.IsEgyptian is not null && model.IsEgyptian.Value)
                 {
                     if (model.NationalId == null || model.NationalId < 2000000000000)
                     {
