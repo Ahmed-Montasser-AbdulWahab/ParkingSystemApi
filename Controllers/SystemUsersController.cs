@@ -14,9 +14,9 @@ using Parking_System_API.Data.Repositories.ParticipantR;
 using System.Linq;
 
 using Parking_System_API.Hashing;
-using Parking_System_API.Data.Repositories.ConstantsR;
+using Parking_System_API.Data.Repositories.ConstantR;
 using System.Collections.Generic;
-using Parking_System_API.Data.Repositories.RolesR;
+using Parking_System_API.Data.Repositories.RoleR;
 using System.Security.Claims;
 using System.IO;
 using Parking_System_API.Helper;

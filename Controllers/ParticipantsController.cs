@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using Parking_System_API.Data.Entities;
 using Parking_System_API.Data.Models;
-using Parking_System_API.Data.Repositories.ConstantsR;
+using Parking_System_API.Data.Repositories.ConstantR;
 using Parking_System_API.Data.Repositories.ParticipantR;
 using Parking_System_API.Data.Repositories.VehicleR;
 using Parking_System_API.Hashing;
@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Parking_System_API.Controllers

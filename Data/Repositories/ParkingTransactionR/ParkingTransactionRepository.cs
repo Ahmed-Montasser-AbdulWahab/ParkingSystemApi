@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
+namespace Parking_System_API.Data.Repositories.ParkingTransactionR
 {
     public class ParkingTransactionRepository : IParkingTransactionRepository
     {

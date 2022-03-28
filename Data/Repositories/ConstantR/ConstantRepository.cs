@@ -4,7 +4,7 @@ using Parking_System_API.Data.Entities;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Parking_System_API.Data.Repositories.ConstantsR
+namespace Parking_System_API.Data.Repositories.ConstantR
 {
     public class ConstantRepository : IConstantRepository
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Parking_System_API.Data.Repositories.RolesR
+namespace Parking_System_API.Data.Repositories.RoleR
 {
     public interface IRoleRepository
     {

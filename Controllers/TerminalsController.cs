@@ -2,8 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
-using Parking_System.Classes;
 using Parking_System_API.Data.DBContext;
+using Parking_System_API.Data.Entities;
+using Parking_System_API.Data.Repositories.CameraR;
+using Parking_System_API.Data.Repositories.GateR;
+using Parking_System_API.Data.Repositories.HardwareR;
+using Parking_System_API.Data.Repositories.ParkingTransactionR;
+using Parking_System_API.Data.Repositories.ParticipantR;
+using Parking_System_API.Data.Repositories.VehicleR;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,31 +23,47 @@ namespace Parking_System_API.Controllers
     public class TerminalsController : ControllerBase
     {
         private readonly AppDbContext context;
+        private readonly IGateRepository gateRepository;
+        private readonly ICameraRepository cameraRepository;
+        private readonly ITerminalRepository terminalRepository;
+        private readonly IParticipantRepository participantRepository;
+        private readonly IVehicleRepository vehicleRepository;
+        private readonly IParkingTransactionRepository parkingTransactionRepository;
 
-        public object Datetime { get; private set; }
-
-        public TerminalsController(AppDbContext context)
+        public TerminalsController(IGateRepository gateRepository, ICameraRepository cameraRepository, ITerminalRepository terminalRepository, IParticipantRepository participantRepository, IVehicleRepository vehicleRepository, IParkingTransactionRepository parkingTransactionRepository)
         {
-            this.context = context;
+            this.gateRepository = gateRepository;
+            this.cameraRepository = cameraRepository;
+            this.terminalRepository = terminalRepository;
+            this.participantRepository = participantRepository;
+            this.vehicleRepository = vehicleRepository;
+            this.parkingTransactionRepository = parkingTransactionRepository;
         }
         [HttpPost]
         public async Task<IActionResult> CarEntering(int GateId)
         {
-            //Car Press Presence Sensor
-            string PlateNum;
-            var gate = await context.Gates.FindAsync(GateId);
-            if (gate == null)
-                return NotFound();
-            else if (gate.State)//gate is open
-                return NotFound();
-            else//gate is closed 
+            try
             {
+                //Car Press Presence Sensor
+
+                var gate = await gateRepository.GetGateById(GateId, true);
+                if (gate == null)
+                    return NotFound(new { Error = $"Gate with Id {GateId} is not found." });
+                if (!gate.Service)
+                {
+                    return BadRequest(new { Error = "Gate is offline" });
+                }
+                if (gate.State) //gate is open
+                {
+                    gate.State = false;
+                }
+                //gate is closed
                 //calling APNR model
 
-                PlateNum = "ABC123";
-                var car = context.Vehicles.Find(PlateNum);
+                string PlateNum = "ABC123";
+                var car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
                 if (car == null)
-                    return NotFound();
+                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
 
                 //calling the faceModel
                 string FaceRecognitionUrl = "http://127.0.0.1:5000/";
@@ -51,56 +73,68 @@ namespace Parking_System_API.Controllers
                 JObject json = JObject.Parse(res);
                 string ParticipantId = json["Id"].ToString();
                 if (ParticipantId == null)
-                    return NotFound();
+                    return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
-                    return NotFound();
+                    return NotFound(new { Error = "ParticipantId is unknown" });
 
                 //checking if Id exists in DB
-                var Person = await context.Participants.Include(E => E.Vehicles).Where(m => m.Id == ParticipantId).FirstOrDefaultAsync();
+                var Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
                 if (Person == null)
-                    return NotFound();
+                    return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
                 if (Person.Vehicles.Contains(car))
                 {
                     //check subscription
                     DateTime Timenow = DateTime.Now;
-                    if (Timenow > car.StartSubscription)
+                    if (Timenow > car.StartSubscription && Timenow < car.EndSubscription)
                     {
-                        if (Timenow < car.EndSubscription)
-                        {
-                            //Parking Transaction
-                            //ParkingTransaction PT=new ParkingTransaction(car.PlateNumberId,gate.TerminalId,) 
-                            gate.State = true;
-                            return Ok("Access Allowed; Gate is being open");
-                        }
+                        //Parking Transaction
+
+                        gate.State = true;
+                        return Ok("Access Allowed; Gate is being open");
+
                     }
 
-
+                    else
+                    {
+                        return Unauthorized(new { Error = "Subscription is not valid." });
+                    }
 
                 }
-                return NotFound();
-
+                return NotFound(new { Error = $"Participant with {ParticipantId} doesn't own a Vehicle with PlateNumber {PlateNum}" });
             }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+            }
+
         }
 
 
         [HttpPost]
         public async Task<IActionResult> CarExiting(int GateId)
         {
-             //Car Press Presence Sensor
-            string PlateNum;
-            var gate = await context.Gates.FindAsync(GateId);
-            if (gate == null)
-                return NotFound();
-            else if (gate.State)//gate is open
-                return NotFound();
-            else//gate is closed 
+            try
             {
+                //Car Press Presence Sensor
+
+                var gate = await gateRepository.GetGateById(GateId, true);
+                if (gate == null)
+                    return NotFound(new { Error = $"Gate with Id {GateId} is not found." });
+                if (!gate.Service)
+                {
+                    return BadRequest(new { Error = "Gate is offline" });
+                }
+                if (gate.State) //gate is open
+                {
+                    gate.State = false;
+                }
+                //gate is closed
                 //calling APNR model
 
-                PlateNum = "ABC123";
-                var car = context.Vehicles.Find(PlateNum);
+                string PlateNum = "ABC123";
+                var car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
                 if (car == null)
-                    return NotFound();
+                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
 
                 //calling the faceModel
                 string FaceRecognitionUrl = "http://127.0.0.1:5000/";
@@ -110,46 +144,60 @@ namespace Parking_System_API.Controllers
                 JObject json = JObject.Parse(res);
                 string ParticipantId = json["Id"].ToString();
                 if (ParticipantId == null)
-                    return NotFound();
+                    return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
-                    return NotFound();
+                    return NotFound(new { Error = "ParticipantId is unknown" });
 
                 //checking if Id exists in DB
-                var Person = await context.Participants.Include(E => E.Vehicles).Where(m => m.Id == ParticipantId).FirstOrDefaultAsync();
+                var Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
                 if (Person == null)
-                    return NotFound();
+                    return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
                 if (Person.Vehicles.Contains(car))
                 {
                     //check subscription
                     DateTime Timenow = DateTime.Now;
-                    if (Timenow < car.EndSubscription)
+                    if (Timenow > car.StartSubscription && Timenow < car.EndSubscription)
                     {
                         //Parking Transaction
-                        //ParkingTransaction PT=new ParkingTransaction(car.PlateNumberId,gate.TerminalId,) 
+
                         gate.State = true;
-                        return Ok("exit Allowed; Gate is being open");
+                        return Ok(new { Success = "Access Allowed; Gate is being open" });
+
+                    }
+                    else
+                    {
+                        return Unauthorized(new { Error = "Subscription is not valid." });
                     }
 
 
-
                 }
-                return NotFound();
 
+                return NotFound(new { Error = $"Participant with {ParticipantId} doesn't own a Vehicle with PlateNumber {PlateNum}" });
             }
-
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+            }
         }
+
 
 
         [HttpPost]
         public async Task<IActionResult> CarDeparture(int GateId)
         {
-            var gate = context.Gates.Find(GateId);
-            if (gate == null)
-                return NotFound();
-            await Task.Delay(3000);
-            gate.State = false;
-            return Ok("Gate is closed");
-
+            try
+            {
+                var gate = await gateRepository.GetGateById(GateId);
+                if (gate == null)
+                    return NotFound(new { Error = $"Gate with id {GateId} doesn't exit" });
+                await Task.Delay(3000);
+                gate.State = false;
+                return Ok(new { Success = "Gate is closed" });
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Internal Server Error {ex}");
+            }
         }
     }
 }

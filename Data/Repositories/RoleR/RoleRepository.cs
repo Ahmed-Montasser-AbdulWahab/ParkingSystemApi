@@ -3,7 +3,7 @@ using Parking_System_API.Data.DBContext;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Parking_System_API.Data.Repositories.RolesR
+namespace Parking_System_API.Data.Repositories.RoleR
 {
     public class RoleRepository : IRoleRepository
     {

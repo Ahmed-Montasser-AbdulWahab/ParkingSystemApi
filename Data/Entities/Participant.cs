@@ -14,7 +14,7 @@ namespace Parking_System_API.Data.Entities
         public string LastUpdated { get; set; }
 
         public string Name { get; set; }
-
+//        public string PhoneNumber { get; set; }
         [Required ]
         public string Email { get; set; }
         [Required]

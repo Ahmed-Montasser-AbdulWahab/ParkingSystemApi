@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Parking_System_API.Data.Repositories.ParkingTransactionsR
+namespace Parking_System_API.Data.Repositories.ParkingTransactionR
 {
     public interface IParkingTransactionRepository
     {
