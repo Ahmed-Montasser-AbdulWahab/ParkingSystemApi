@@ -39,7 +39,7 @@ namespace Parking_System_API.Controllers
             this.vehicleRepository = vehicleRepository;
             this.parkingTransactionRepository = parkingTransactionRepository;
         }
-        [HttpPost]
+        [HttpPost("CarEntry")]
         public async Task<IActionResult> CarEntering(int GateId)
         {
             try
@@ -110,7 +110,7 @@ namespace Parking_System_API.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("CarExit")]
         public async Task<IActionResult> CarExiting(int GateId)
         {
             try
@@ -182,7 +182,7 @@ namespace Parking_System_API.Controllers
 
 
 
-        [HttpPost]
+        [HttpPost("CarDeparture")]
         public async Task<IActionResult> CarDeparture(int GateId)
         {
             try
