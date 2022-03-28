@@ -28,7 +28,7 @@ namespace Parking_System_API.Data.Repositories.GateR
             IQueryable<Gate> query = _context.Gates;
             if (includeTerminal)
             {
-                query = query.Include(c => c.TerminalId);
+                query = query.Include(c => c.Terminal);
             }
             query = query.OrderBy(c => c.Id);
 
@@ -41,7 +41,7 @@ namespace Parking_System_API.Data.Repositories.GateR
 
             if (includeTerminal)
             {
-                query = query.Include(c => c.TerminalId);
+                query = query.Include(c => c.Terminal);
             }
             // Order It
             query = query.Where(c => c.Id == Id);
