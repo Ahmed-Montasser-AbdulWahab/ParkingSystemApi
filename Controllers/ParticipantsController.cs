@@ -256,7 +256,7 @@ namespace Parking_System_API.Controllers
                 {
                     return BadRequest(new { Error = $"Please Upload MP4 File." });
                 }
-                var path = $".\\wwwroot\\videos\\Participants\\{id}_{DateTime.Now}.mp4";
+                var path = $".\\wwwroot\\videos\\Participants\\{id}_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.mp4";
 
                 //Connection Lost ??? 
 
@@ -331,7 +331,7 @@ namespace Parking_System_API.Controllers
 
                 }
 
-                var path = $".\\wwwroot\\images\\Participants\\{id}_{HashingClass.GenerateSalt()}.jpg";
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.jpg";
                 //Connection Lost ??? 
 
                 using (var stream = new FileStream(path, FileMode.Create))
@@ -392,7 +392,7 @@ namespace Parking_System_API.Controllers
                     
                 }
 
-                var path = $".\\wwwroot\\images\\Participants\\{id}_{HashingClass.GenerateSalt()}.jpg";
+                var path = $".\\wwwroot\\images\\Participants\\{id}_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.jpg";
 
                 //Connection Lost ??? 
 
