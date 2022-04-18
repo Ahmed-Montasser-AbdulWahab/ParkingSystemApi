@@ -269,7 +269,12 @@ namespace Parking_System_API.Controllers
                         var t = transaction[0];
                         if(t.terminal.Direction) //Enter Direction
                         {
-                            return Ok(new { Success = "Access Allowed; Gate is open" });
+
+                            var Duration = DateTime.Now - t.DateTimeTransaction ;
+
+                            //Calculate Duration and Amount of Money
+
+                            return Ok(new { Success = "Access Allowed; Gate is open", Duration = $"{Duration}", Amount= $"{Duration * 2}" });
                         }
 
                         return Unauthorized(new { Error = $"no enter transaction with you and the car {PlateNum}." });
