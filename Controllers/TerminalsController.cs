@@ -14,6 +14,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parking_System_API.Controllers
@@ -66,12 +67,13 @@ namespace Parking_System_API.Controllers
                     return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
 
                 //calling the faceModel
-                string FaceRecognitionUrl = "http://127.0.0.1:5000/";
-                WebClient client = new WebClient();
-                byte[] response = client.DownloadData(FaceRecognitionUrl);
-                string res = System.Text.Encoding.ASCII.GetString(response);
-                JObject json = JObject.Parse(res);
-                string ParticipantId = json["Id"].ToString();
+
+                string ParticipantId = "";
+                Thread participantIdThread = new Thread(
+                    () =>
+                    ParticipantId = GetParticipantId("http://127.0.0.1:5000/"));
+                participantIdThread.Start();
+                participantIdThread.Join();
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
@@ -109,6 +111,14 @@ namespace Parking_System_API.Controllers
 
         }
 
+        private static String GetParticipantId(String Url)
+        {
+            WebClient client = new WebClient();
+            byte[] response = client.DownloadData(Url);
+            string res = System.Text.Encoding.ASCII.GetString(response);
+            JObject json = JObject.Parse(res);
+            return json["Id"].ToString();
+        }
 
         [HttpPost("CarExit/{GateId}")]
         public async Task<IActionResult> CarExiting(int GateId)
