@@ -11,6 +11,7 @@ using Parking_System_API.Data.Repositories.ParkingTransactionR;
 using Parking_System_API.Data.Repositories.ParticipantR;
 using Parking_System_API.Data.Repositories.VehicleR;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -210,7 +211,25 @@ namespace Parking_System_API.Controllers
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
+                //short term
+                //user should move his head in front of camera for few seconds when detection starts
+                
+                {
+                    var short_term_vehicle = new Vehicle { PlateNumberId = PlateNum };
+                    ICollection<Vehicle> short_term_vehicles = new List<Vehicle>
+                    {
+                        short_term_vehicle
+                    };
+
+                    var short_term_participant = new Participant 
+                    {
+                        Vehicles = short_term_vehicles ,
+                        Id = Guid.NewGuid().ToString(),
+                        NationalId = 01234567891234,
+                        
+                    };
                     return NotFound(new { Error = "ParticipantId is unknown" });
+                }
 
                 //checking if Id exists in DB
                 if (Person == null)

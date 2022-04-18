@@ -163,9 +163,6 @@ namespace Parking_System_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PhotoUrl")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
@@ -264,8 +261,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "lsoMr2TznsGe/KETGffS+RXgr/YUvGe89RMq3UshrWU=",
-                            Salt = "maZhV62lm84aRSx6T7BKNw=="
+                            Password = "RiyYISslwAGwA/GzVOV82pCqkOeCJgvvnULB1linPfI=",
+                            Salt = "xfSmDVRmw5XfaU5CsEVQ+g=="
                         });
                 });
 
