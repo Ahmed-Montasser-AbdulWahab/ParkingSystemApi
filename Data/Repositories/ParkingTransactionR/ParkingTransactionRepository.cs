@@ -105,7 +105,7 @@ namespace Parking_System_API.Data.Repositories.ParkingTransactionR
             }
 
             // Order It
-            query = query.Where(c => c.PlateNumberId == VehicleId && c.ParticipantId == ParticipantId);
+            query = query.Where(c => c.PlateNumberId == VehicleId && c.ParticipantId == ParticipantId).OrderByDescending(o => o.DateTimeTransaction);
 
             return await query.ToArrayAsync();
         }
