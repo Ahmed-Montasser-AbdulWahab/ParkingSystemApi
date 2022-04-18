@@ -70,6 +70,39 @@ namespace Parking_System_API.Data.DBContext
                 IsPowerAccount = true
                 }
                 );
+
+            mb.Entity<Terminal>().HasData(
+                new Terminal
+                {
+                    Id = 1,
+                    Service = true,
+                    Direction = true
+                },
+                new Terminal
+                {
+                    Id = 2,
+                    Service = true,
+                    Direction = true
+                }
+                
+                );
+            mb.Entity<Gate>().HasData(
+                new Gate
+                {
+                    Id = 1,
+                    Service = true,
+                    State = false,
+                    TerminalId = 1
+                },
+                new Gate
+                {
+                    Id = 2,
+                    Service = true,
+                    State = false,
+                    TerminalId = 2
+                }
+                ) ;
+            
             mb.Entity<Participant>().Property(e => e.PhotoUrl).HasDefaultValue(".\\wwwroot\\images\\Anonymous.jpg");
             mb.Entity<Participant>().HasMany(p => p.Vehicles).WithMany(e => e.Participants).UsingEntity(j => j.ToTable("Participant_Vehicle"));
             mb.Entity<Participant>(entity => {
