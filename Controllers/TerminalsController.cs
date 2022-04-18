@@ -61,28 +61,57 @@ namespace Parking_System_API.Controllers
                 //gate is closed
                 //calling APNR model
 
-                string PlateNum = "ABC123";
-                var car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
-                if (car == null)
-                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
+                string PlateNum = "";
+                /*
+                 * 
+                 * 
+                 */
+                Thread VehicleThread = new Thread(() => PlateNum = "ABC123" );
+
+
 
                 //calling the faceModel
 
                 string ParticipantId = "";
-                Thread participantIdThread = new Thread(
+                Thread ParticipantIdThread = new Thread(
                     () =>
                     ParticipantId = GetParticipantId("http://127.0.0.1:5000/"));
-                participantIdThread.Start();
-                participantIdThread.Join();
+                ParticipantIdThread.Start();
+                VehicleThread.Start();
+
+                ParticipantIdThread.Join();
+                VehicleThread.Join();
+
+
+
+                Vehicle car = null;
+                Thread SearchCarThread = new Thread(
+                    async () => car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum));
+
+                Participant Person = null;
+                Thread SearchParticipantThread = new Thread(
+                    async () => Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true)
+                    );
+                SearchCarThread.Start();
+                SearchParticipantThread.Start();
+
+                SearchCarThread.Join();
+                SearchParticipantThread.Join();
+
+                if (car == null)
+                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
+
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
                     return NotFound(new { Error = "ParticipantId is unknown" });
 
                 //checking if Id exists in DB
-                var Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
+                
                 if (Person == null)
                     return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
+
+
                 if (Person.Vehicles.Contains(car))
                 {
                     //check subscription
@@ -141,27 +170,55 @@ namespace Parking_System_API.Controllers
                 //gate is closed
                 //calling APNR model
 
-                string PlateNum = "ABC123";
-                var car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
-                if (car == null)
-                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
+                string PlateNum = "";
+                /*
+                 * 
+                 * 
+                 */
+                Thread VehicleThread = new Thread(() => PlateNum = "ABC123");
+
+
 
                 //calling the faceModel
-                string FaceRecognitionUrl = "http://127.0.0.1:5000/";
-                WebClient client = new WebClient();
-                byte[] response = client.DownloadData(FaceRecognitionUrl);
-                string res = System.Text.Encoding.ASCII.GetString(response);
-                JObject json = JObject.Parse(res);
-                string ParticipantId = json["Id"].ToString();
+
+                string ParticipantId = "";
+                Thread ParticipantIdThread = new Thread(
+                    () =>
+                    ParticipantId = GetParticipantId("http://127.0.0.1:5000/"));
+                ParticipantIdThread.Start();
+                VehicleThread.Start();
+
+                ParticipantIdThread.Join();
+                VehicleThread.Join();
+
+
+
+                Vehicle car = null;
+                Thread SearchCarThread = new Thread(
+                    async () => car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum));
+
+                Participant Person = null;
+                Thread SearchParticipantThread = new Thread(
+                    async () => Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true)
+                    );
+                SearchCarThread.Start();
+                SearchParticipantThread.Start();
+
+                SearchCarThread.Join();
+                SearchParticipantThread.Join();
+
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
                     return NotFound(new { Error = "ParticipantId is unknown" });
 
                 //checking if Id exists in DB
-                var Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
                 if (Person == null)
                     return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
+
+                //1- Driver is saved on car
+                //2- Driver enter is the same as exit
+
                 if (Person.Vehicles.Contains(car))
                 {
                     //check subscription
@@ -171,7 +228,7 @@ namespace Parking_System_API.Controllers
                         //Parking Transaction
 
                         gate.State = true;
-                        return Ok(new { Success = "Access Allowed; Gate is being open" });
+                        return Ok(new { Success = "Access Allowed; Gate is open" });
 
                     }
                     else
@@ -180,9 +237,27 @@ namespace Parking_System_API.Controllers
                     }
 
 
+                }else
+                {
+                    ParkingTransaction[] transaction = await parkingTransactionRepository.GetAllTransactionsForParticipantAndVehicle(ParticipantId, PlateNum) ;
+                    if (transaction == null || transaction.Length == 0)
+                    {
+                        return Unauthorized(new { Error = "Not allowed to exit with car." });
+                    }
+
+                    else
+                    {
+                        var t = transaction[0];
+                        if(t.terminal.Direction) //Enter Direction
+                        {
+                            return Ok(new { Success = "Access Allowed; Gate is open" });
+                        }
+
+                        return Unauthorized(new { Error = $"no enter transaction with you and the car {PlateNum}." });
+                    }
                 }
 
-                return NotFound(new { Error = $"Participant with {ParticipantId} doesn't own a Vehicle with PlateNumber {PlateNum}" });
+               
             }
             catch (Exception ex)
             {
@@ -192,7 +267,7 @@ namespace Parking_System_API.Controllers
 
 
 
-        [HttpPost("CarDeparture")]
+        [HttpPost("CarDeparture/{GateId}")]
         public async Task<IActionResult> CarDeparture(int GateId)
         {
             try
