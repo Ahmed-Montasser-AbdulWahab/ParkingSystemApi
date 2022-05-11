@@ -221,13 +221,15 @@ namespace Parking_System_API.Controllers
                         short_term_vehicle
                     };
 
-                    var short_term_participant = new Participant 
+                    var short_term_participant = new ShortTerm 
                     {
-                        Vehicles = short_term_vehicles ,
+                        Vehicle = short_term_vehicle ,
                         Id = Guid.NewGuid().ToString(),
-                        NationalId = 01234567891234,
+                        DoProvideVideo = false,
+                        DoDetected = false
                         
                     };
+                    //Capture A few seconds video then upload it to face model to create the classifier for the current short term user
                     return NotFound(new { Error = "ParticipantId is unknown" });
                 }
 
