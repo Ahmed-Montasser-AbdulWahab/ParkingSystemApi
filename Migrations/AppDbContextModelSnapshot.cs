@@ -277,8 +277,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "ura/JHntQ5XIi9SmUxKE8rCPix6kWhtYT+ftdv1vVfk=",
-                            Salt = "Ze3luwuhgZ2c8mVNp+aWfQ=="
+                            Password = "8lsgr2sCXpP+Po1C6XuaKNWNoeNufkd6JfIp4lkOaqg=",
+                            Salt = "srOss97r5Fp3gj9YvTROgg=="
                         });
                 });
 
