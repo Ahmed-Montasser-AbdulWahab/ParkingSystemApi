@@ -83,32 +83,30 @@ namespace Parking_System_API.Controllers
                 ParticipantIdThread.Join();
                 VehicleThread.Join();
 
+                if (PlateNum == "Timeout")
+                {
+                    return NotFound(new { Error = "Timeout" });
+                }
 
+                Vehicle car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
 
-                Vehicle car = null;
-                Thread SearchCarThread = new Thread(
-                    async () => car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum));
+                
+                    
 
-                Participant Person = null;
-                Thread SearchParticipantThread = new Thread(
-                    async () => Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true)
-                    );
-                SearchCarThread.Start();
-                SearchParticipantThread.Start();
-
-                SearchCarThread.Join();
-                SearchParticipantThread.Join();
 
                 if (car == null)
                     return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
 
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
-                if (ParticipantId == "unknown")
+                else if (ParticipantId == "unknown")
                     return NotFound(new { Error = "ParticipantId is unknown" });
+                else if (ParticipantId == "Timeout")
+                    return NotFound(new { Error = "Timeout" });
 
                 //checking if Id exists in DB
-                
+                Participant Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
+
                 if (Person == null)
                     return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
 
@@ -144,41 +142,38 @@ namespace Parking_System_API.Controllers
         private static String GetParticipantId(String Url)
         {
             WebClient client = new WebClient();
-            JObject json = new JObject();
-            try 
+
+            JObject json;
+            string jsonformate = @"{
+                     Id: 'Timeout',
+                }";
+            try
             {
                 byte[] response = client.DownloadData(Url);
-                string res = System.Text.Encoding.ASCII.GetString(response);
-                json = JObject.Parse(res);
+                jsonformate = System.Text.Encoding.ASCII.GetString(response);
             }
-            catch(Exception ex) 
-            {
-                string jsonformate = @"{
-                     'Id': 'Timeout',
-                }";
-
-                json = JObject.Parse(jsonformate);
+            catch (Exception)
+            { 
             }
+            json = JObject.Parse(jsonformate);
             return json["Id"].ToString();
         }
         private static String GetVehicleId(String Url)
         {
             WebClient client = new WebClient();
-            JObject json = new JObject();
+            JObject json;
+            string jsonformate = @"{
+                    Id: 'Timeout',
+                }";
             try
             {
                 byte[] response = client.DownloadData(Url);
-                string res = System.Text.Encoding.ASCII.GetString(response);
-                json = JObject.Parse(res);
+                jsonformate = System.Text.Encoding.ASCII.GetString(response);
              }
-            catch (Exception ex)
-            {
-                string jsonformate = @"{
-                    'Id': 'Timeout',
-                }";
-
-                json = JObject.Parse(jsonformate);
+            catch (Exception)
+            { 
             }
+            json = JObject.Parse(jsonformate);
             return json["Id"].ToString();
         }
 
@@ -208,7 +203,7 @@ namespace Parking_System_API.Controllers
                  * 
                  * 
                  */
-                Thread VehicleThread = new Thread(() => PlateNum = "ABC123");
+                Thread VehicleThread = new Thread(() => PlateNum = GetVehicleId("http://127.0.0.1:4999/start"));
 
 
 
@@ -223,28 +218,40 @@ namespace Parking_System_API.Controllers
 
                 ParticipantIdThread.Join();
                 VehicleThread.Join();
-                if (ParticipantId == "Timeout")
+
+
+
+
+
+                if (PlateNum == "Timeout")
                 {
-                    return BadRequest(new { Error = "Getting the participant ID timed out" });
+                    return NotFound(new { Error = "Timeout" });
                 }
 
-
-                 
                 Vehicle car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
 
 
 
-                Participant Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
+
+
+                if (car == null)
+                    return NotFound(new { Error = $"Car with PlateNumber {PlateNum} is not found" });
+
+
+
+
 
 
 
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
-                if (ParticipantId == "unknown")
+                else if (ParticipantId == "Timeout")
+                    return NotFound(new { Error = "Timeout" });
+                else if (ParticipantId == "unknown")
                 //short term
                 //user should move his head in front of camera for few seconds when detection starts
                 
-                {
+                { /*
                     var short_term_vehicle = new Vehicle { PlateNumberId = PlateNum };
                     ICollection<Vehicle> short_term_vehicles = new List<Vehicle>
                     {
@@ -259,10 +266,10 @@ namespace Parking_System_API.Controllers
                         DoDetected = false
                         
                     };
-                    //Capture A few seconds video then upload it to face model to create the classifier for the current short term user
+                    //Capture A few seconds video then upload it to face model to create the classifier for the current short term user*/
                     return NotFound(new { Error = "ParticipantId is unknown" });
                 }
-
+                Participant Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
                 //checking if Id exists in DB
                 if (Person == null)
                     return NotFound(new { Error = $"Person with Id {ParticipantId} is not found." });
