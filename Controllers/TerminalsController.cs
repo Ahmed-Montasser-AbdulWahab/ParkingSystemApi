@@ -153,7 +153,11 @@ namespace Parking_System_API.Controllers
             }
             catch(Exception ex) 
             {
-                json = JObject.Parse("Timeout");
+                string jsonformate = @"{
+                     'Id': 'Timeout',
+                }";
+
+                json = JObject.Parse(jsonformate);
             }
             return json["Id"].ToString();
         }
@@ -166,10 +170,14 @@ namespace Parking_System_API.Controllers
                 byte[] response = client.DownloadData(Url);
                 string res = System.Text.Encoding.ASCII.GetString(response);
                 json = JObject.Parse(res);
-            }
+             }
             catch (Exception ex)
             {
-                json = JObject.Parse("Timeout");
+                string jsonformate = @"{
+                    'Id': 'Timeout',
+                }";
+
+                json = JObject.Parse(jsonformate);
             }
             return json["Id"].ToString();
         }
@@ -215,22 +223,20 @@ namespace Parking_System_API.Controllers
 
                 ParticipantIdThread.Join();
                 VehicleThread.Join();
+                if (ParticipantId == "Timeout")
+                {
+                    return BadRequest(new { Error = "Getting the participant ID timed out" });
+                }
+
+
+                 
+                Vehicle car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum);
 
 
 
-                Vehicle car = null;
-                Thread SearchCarThread = new Thread(
-                    async () => car = await vehicleRepository.GetVehicleAsyncByPlateNumber(PlateNum));
+                Participant Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true);
 
-                Participant Person = null;
-                Thread SearchParticipantThread = new Thread(
-                    async () => Person = await participantRepository.GetParticipantAsyncByID(ParticipantId, true)
-                    );
-                SearchCarThread.Start();
-                SearchParticipantThread.Start();
 
-                SearchCarThread.Join();
-                SearchParticipantThread.Join();
 
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
