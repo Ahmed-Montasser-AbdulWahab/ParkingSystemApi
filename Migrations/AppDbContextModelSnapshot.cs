@@ -100,6 +100,22 @@ namespace Parking_System_API.Migrations
                     b.HasIndex("TerminalId");
 
                     b.ToTable("Gates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Service = true,
+                            State = false,
+                            TerminalId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Service = true,
+                            State = false,
+                            TerminalId = 2
+                        });
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.ParkingTransaction", b =>
@@ -261,8 +277,8 @@ namespace Parking_System_API.Migrations
                             IsAdmin = true,
                             IsPowerAccount = true,
                             Name = "Power Admin",
-                            Password = "WBCu8S58ZkVMxHcncqrewUhdFFwgpCK7iPVdvar/Z6Q=",
-                            Salt = "ZC8XI0NGUTtuQ7i396oc6Q=="
+                            Password = "8lsgr2sCXpP+Po1C6XuaKNWNoeNufkd6JfIp4lkOaqg=",
+                            Salt = "srOss97r5Fp3gj9YvTROgg=="
                         });
                 });
 
@@ -308,6 +324,20 @@ namespace Parking_System_API.Migrations
                         .HasFilter("[ConnectionString] IS NOT NULL");
 
                     b.ToTable("Terminals");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Direction = true,
+                            Service = true
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Direction = true,
+                            Service = true
+                        });
                 });
 
             modelBuilder.Entity("Parking_System_API.Data.Entities.Vehicle", b =>

@@ -11,6 +11,7 @@ using Parking_System_API.Data.Repositories.ParkingTransactionR;
 using Parking_System_API.Data.Repositories.ParticipantR;
 using Parking_System_API.Data.Repositories.VehicleR;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -40,7 +41,7 @@ namespace Parking_System_API.Controllers
             this.vehicleRepository = vehicleRepository;
             this.parkingTransactionRepository = parkingTransactionRepository;
         }
-        [HttpPost("CarEntry/{GateId}")]
+        [HttpPost("CarEntry/{GateId:int}")]
         public async Task<IActionResult> CarEntering(int GateId)
         {
             try
@@ -66,7 +67,7 @@ namespace Parking_System_API.Controllers
                  * 
                  * 
                  */
-                Thread VehicleThread = new Thread(() => PlateNum = "ABC123" );
+                Thread VehicleThread = new Thread(() => PlateNum =  GetVehicleId("http://127.0.0.1:4999/start"));
 
 
 
@@ -143,13 +144,37 @@ namespace Parking_System_API.Controllers
         private static String GetParticipantId(String Url)
         {
             WebClient client = new WebClient();
-            byte[] response = client.DownloadData(Url);
-            string res = System.Text.Encoding.ASCII.GetString(response);
-            JObject json = JObject.Parse(res);
+            JObject json = new JObject();
+            try 
+            {
+                byte[] response = client.DownloadData(Url);
+                string res = System.Text.Encoding.ASCII.GetString(response);
+                json = JObject.Parse(res);
+            }
+            catch(Exception ex) 
+            {
+                json = JObject.Parse("Timeout");
+            }
+            return json["Id"].ToString();
+        }
+        private static String GetVehicleId(String Url)
+        {
+            WebClient client = new WebClient();
+            JObject json = new JObject();
+            try
+            {
+                byte[] response = client.DownloadData(Url);
+                string res = System.Text.Encoding.ASCII.GetString(response);
+                json = JObject.Parse(res);
+            }
+            catch (Exception ex)
+            {
+                json = JObject.Parse("Timeout");
+            }
             return json["Id"].ToString();
         }
 
-        [HttpPost("CarExit/{GateId}")]
+        [HttpPost("CarExit/{GateId:int}")]
         public async Task<IActionResult> CarExiting(int GateId)
         {
             try
@@ -210,7 +235,27 @@ namespace Parking_System_API.Controllers
                 if (ParticipantId == null)
                     return BadRequest(new { Error = "ParticipantId is null" });
                 if (ParticipantId == "unknown")
+                //short term
+                //user should move his head in front of camera for few seconds when detection starts
+                
+                {
+                    var short_term_vehicle = new Vehicle { PlateNumberId = PlateNum };
+                    ICollection<Vehicle> short_term_vehicles = new List<Vehicle>
+                    {
+                        short_term_vehicle
+                    };
+
+                    var short_term_participant = new ShortTerm 
+                    {
+                        Vehicle = short_term_vehicle ,
+                        Id = Guid.NewGuid().ToString(),
+                        DoProvideVideo = false,
+                        DoDetected = false
+                        
+                    };
+                    //Capture A few seconds video then upload it to face model to create the classifier for the current short term user
                     return NotFound(new { Error = "ParticipantId is unknown" });
+                }
 
                 //checking if Id exists in DB
                 if (Person == null)
@@ -272,7 +317,7 @@ namespace Parking_System_API.Controllers
 
 
 
-        [HttpPost("CarDeparture/{GateId}")]
+        [HttpPost("CarDeparture/{GateId:int}")]
         public async Task<IActionResult> CarDeparture(int GateId)
         {
             try
