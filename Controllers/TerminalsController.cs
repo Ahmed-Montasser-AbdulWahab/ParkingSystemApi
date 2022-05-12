@@ -337,7 +337,7 @@ namespace Parking_System_API.Controllers
             {
                 var gate = await gateRepository.GetGateById(GateId);
                 if (gate == null)
-                    return NotFound(new { Error = $"Gate with id {GateId} doesn't exit" });
+                    return NotFound(new { Error = $"Gate with id {GateId} doesn't exist" });
                 await Task.Delay(3000);
                 gate.State = false;
                 return Ok(new { Success = "Gate is closed" });
